@@ -33,24 +33,24 @@ Thank you for your interest in contributing! This document provides guidelines a
 
 4. **Run Tests**
    ```bash
-   node test-milestone1.js
-   node test-milestone2.js
-   node test-milestone3.js
-   node test-milestone4.js
+   npm test -- --run
    ```
 
 ## Project Structure
 
 ```
-mcp/
+base-ui-mcp-server/
 ├── src/
 │   ├── index.ts              # Main server entry point
 │   ├── types.ts              # TypeScript types and Zod schemas
+│   ├── constants/            # Constants and fallback data
 │   ├── errors/               # Custom error classes
-│   ├── fetchers/             # GitHub data fetching
+│   ├── fetchers/             # GitHub and examples fetching
 │   ├── tools/                # MCP tool implementations
 │   └── utils/                # Utility functions
-├── test-milestone*.js        # Test suites
+├── test/                     # Vitest test suites
+│   ├── search-components.test.ts
+│   └── github-fetcher.test.ts
 └── dist/                     # Compiled output (generated)
 ```
 
@@ -105,14 +105,15 @@ const parsed = MySchema.parse(input);
 ### Running Tests
 
 ```bash
-# Build before testing
-npm run build
+# Run all tests
+npm test -- --run
 
-# Run specific milestone tests
-node test-milestone1.js
-node test-milestone2.js
-node test-milestone3.js
-node test-milestone4.js
+# Run tests in watch mode
+npm run test:watch
+
+# Run specific test file
+npm test -- test/search-components.test.ts --run
+npm test -- test/github-fetcher.test.ts --run
 ```
 
 ### Writing Tests
@@ -124,26 +125,36 @@ When adding new features:
 3. Ensure test coverage for edge cases
 4. Follow existing test patterns
 
-Example test structure:
+Example test structure using Vitest:
 
-```javascript
-async function testNewFeature() {
-  console.log('🧪 Testing New Feature\n');
+```typescript
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-  const server = spawn('npm', ['run', 'dev'], {
-    stdio: ['pipe', 'pipe', 'pipe'],
-    cwd: process.cwd(),
+describe('New Feature', () => {
+  beforeEach(() => {
+    // Setup before each test
   });
 
-  await setTimeout(2000); // Wait for server
+  afterEach(() => {
+    // Cleanup after each test
+  });
 
-  // Test case 1
-  console.log('📋 Test 1: Description...');
-  // ... test implementation
+  it('should work correctly', () => {
+    // Arrange
+    const input = 'test input';
 
-  // Cleanup
-  server.kill();
-}
+    // Act
+    const result = newFeature(input);
+
+    // Assert
+    expect(result).toBe('expected output');
+  });
+
+  it('should handle errors gracefully', () => {
+    // Test error conditions
+    expect(() => newFeature('')).toThrow('Error message');
+  });
+});
 ```
 
 ## Pull Request Process
@@ -153,9 +164,7 @@ async function testNewFeature() {
 1. **Run Tests**: Ensure all tests pass
 
    ```bash
-   npm run build
-   node test-milestone1.js
-   # ... run all tests
+   npm test -- --run
    ```
 
 2. **Check Types**: Verify TypeScript compilation
@@ -261,10 +270,11 @@ async function testNewFeature() {
    ```
 
 5. **Add Tests**
-   - Create `test-new-feature.js`
+   - Create `test/new-feature.test.ts` in the test/ directory
    - Test success cases
    - Test error cases
    - Test edge cases
+   - Use Vitest's `describe`, `it`, and `expect` APIs
 
 ### Adding New Error Types
 
@@ -292,15 +302,15 @@ async function testNewFeature() {
 
 ### Adding New Components
 
-Update `src/fetchers/github-fetcher.ts`:
+Components are automatically fetched from the GitHub API. If you need to update the fallback list, update `src/constants/fallback-components.ts`:
 
 ```typescript
-const COMPONENT_FILES = [
+export const FALLBACK_COMPONENT_NAMES: readonly string[] = [
   // ... existing components
   'new-component-root',
   'new-component-trigger',
   // ...
-];
+] as const;
 ```
 
 ## Performance Considerations
@@ -347,10 +357,10 @@ When adding features:
 
 ## Getting Help
 
-- Open an issue for questions
+- Open an issue on [GitHub](https://github.com/morksen123/base-ui-mcp-server/issues) for questions
 - Check existing issues and PRs
-- Review the shadcn MCP documentation
-- Read the MCP specification
+- Review the [shadcn MCP documentation](https://ui.shadcn.com/docs/mcp)
+- Read the [MCP specification](https://modelcontextprotocol.io/)
 
 ## Code of Conduct
 
