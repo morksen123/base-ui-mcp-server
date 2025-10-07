@@ -1,20 +1,28 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-import dedent from 'dedent';
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
+import dedent from "dedent";
 
 // Import our tools
-import { searchComponents, getComponent, listComponents } from './tools/component-tools.js';
-import { getExamples, getDemo } from './tools/examples-tools.js';
+import {
+  searchComponents,
+  searchComponentsWithPagination,
+  getComponent,
+  listComponents,
+} from "./tools/component-tools.js";
+import { getExamples, getDemo } from "./tools/examples-tools.js";
 import {
   getInstallationGuide,
   getSetupChecklist,
   getComponentDependencies,
-} from './tools/installation-tools.js';
+} from "./tools/installation-tools.js";
 
 // Import schemas and errors
 import {
@@ -26,21 +34,21 @@ import {
   GetInstallationGuideSchema,
   GetComponentDependenciesSchema,
   GetSetupChecklistSchema,
-} from './types.js';
-import { BaseUIError } from './errors/registry-error.js';
+} from "./types.js";
+import { BaseUIError } from "./errors/registry-error.js";
 
 async function main() {
   const server = new Server(
     {
-      name: 'base-ui',
-      version: '1.0.0',
+      name: "base-ui",
+      version: "1.0.0",
     },
     {
       capabilities: {
         resources: {},
         tools: {},
       },
-    },
+    }
   );
 
   // List available tools
@@ -48,7 +56,7 @@ async function main() {
     return {
       tools: [
         {
-          name: 'search_components',
+          name: "search_components",
           description: dedent`
             Search Base UI components by name or description using fuzzy matching.
             Returns components with relevance scores.
@@ -56,7 +64,7 @@ async function main() {
           inputSchema: zodToJsonSchema(SearchComponentsSchema),
         },
         {
-          name: 'get_component',
+          name: "get_component",
           description: dedent`
             Get detailed information about a specific Base UI component including props,
             data attributes, and CSS variables. Use the exact component name (e.g., 'Input', 'DialogRoot').
@@ -64,7 +72,7 @@ async function main() {
           inputSchema: zodToJsonSchema(GetComponentSchema),
         },
         {
-          name: 'list_components',
+          name: "list_components",
           description: dedent`
             List all available Base UI components with pagination support.
             Use this to browse all components in the library.
@@ -72,7 +80,7 @@ async function main() {
           inputSchema: zodToJsonSchema(ListComponentsSchema),
         },
         {
-          name: 'get_component_examples',
+          name: "get_component_examples",
           description: dedent`
             ⭐ MOST IMPORTANT: Get full, copy-pasteable code examples and demos for a component.
             Returns working demo code (both CSS Modules and Tailwind variants), anatomy,
@@ -81,7 +89,7 @@ async function main() {
           inputSchema: zodToJsonSchema(GetComponentExamplesSchema),
         },
         {
-          name: 'get_specific_demo',
+          name: "get_specific_demo",
           description: dedent`
             Get a specific demo by name for a component. Useful when you know which demo you want.
             Returns the full code for that specific demo.
@@ -89,7 +97,7 @@ async function main() {
           inputSchema: zodToJsonSchema(GetSpecificDemoSchema),
         },
         {
-          name: 'get_installation_guide',
+          name: "get_installation_guide",
           description: dedent`
             Get installation commands, required imports, peer dependencies, and basic usage
             for one or more components. Includes npm/yarn/pnpm commands and setup instructions.
@@ -97,7 +105,7 @@ async function main() {
           inputSchema: zodToJsonSchema(GetInstallationGuideSchema),
         },
         {
-          name: 'get_component_dependencies',
+          name: "get_component_dependencies",
           description: dedent`
             Get detailed dependency information for a component including peer dependencies,
             related components in the same family, required vs optional parts, and component structure.
@@ -105,7 +113,7 @@ async function main() {
           inputSchema: zodToJsonSchema(GetComponentDependenciesSchema),
         },
         {
-          name: 'get_setup_checklist',
+          name: "get_setup_checklist",
           description: dedent`
             Get a comprehensive setup checklist for Base UI including installation verification,
             React version checks, TypeScript configuration, CSS setup, and common troubleshooting.
@@ -120,7 +128,7 @@ async function main() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
       if (!request.params.arguments) {
-        throw new Error('No tool arguments provided.');
+        throw new Error("No tool arguments provided.");
       }
 
       const { name, arguments: args } = request.params;
@@ -129,26 +137,32 @@ async function main() {
       console.error(`Tool called: ${name}`, args);
 
       switch (name) {
-        case 'search_components': {
+        case "search_components": {
           // Validate and parse input
           const parsedArgs = SearchComponentsSchema.parse(args);
-          const results = await searchComponents(parsedArgs.query, parsedArgs.limit, {
-            minScore: parsedArgs.minScore,
-            includeProps: parsedArgs.includeProps,
-            includeDataAttributes: parsedArgs.includeDataAttributes,
-          });
+          const searchResults = await searchComponentsWithPagination(
+            parsedArgs.query,
+            parsedArgs.limit,
+            {
+              offset: parsedArgs.offset,
+              minScore: parsedArgs.minScore,
+              includeProps: parsedArgs.includeProps,
+              includeDataAttributes: parsedArgs.includeDataAttributes,
+            }
+          );
 
-          if (results.length === 0) {
+          if (searchResults.items.length === 0) {
             return {
               content: [
                 {
-                  type: 'text',
+                  type: "text",
                   text: dedent`
                     No components found matching "${parsedArgs.query}".
 
                     💡 Try:
                     - Using a different search term
                     - Searching for partial matches (e.g., "dial" for Dialog)
+                    - Lowering the minScore threshold
                     - Using list_components to see all available components
                   `,
                 },
@@ -156,30 +170,36 @@ async function main() {
             };
           }
 
+          const { items, pagination } = searchResults;
+          
+          let response = `# Search Results for "${parsedArgs.query}"\n\n`;
+          response += `Found ${pagination.total} component(s) (showing ${items.length})\n\n`;
+          
+          items.forEach((component) => {
+            response += `## ${component.name}\n`;
+            response += `${component.description || "No description"}\n`;
+            response += `- Props: ${Object.keys(component.props).length}\n`;
+            response += `- Data Attributes: ${Object.keys(component.dataAttributes).length}\n`;
+            response += `- CSS Variables: ${Object.keys(component.cssVariables).length}\n\n`;
+          });
+          
+          response += `---\n\n`;
+          response += `**Pagination:** Showing ${pagination.offset + 1}-${Math.min(pagination.offset + pagination.limit, pagination.total)} of ${pagination.total}\n`;
+          if (pagination.hasMore) {
+            response += `\n💡 Use \`offset: ${pagination.offset + pagination.limit}\` to see more results.\n`;
+          }
+
           return {
             content: [
               {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    query: parsedArgs.query,
-                    resultsCount: results.length,
-                    components: results.map((c) => ({
-                      name: c.name,
-                      description: c.description,
-                      propsCount: Object.keys(c.props).length,
-                      dataAttributesCount: Object.keys(c.dataAttributes).length,
-                    })),
-                  },
-                  null,
-                  2,
-                ),
+                type: "text",
+                text: response,
               },
             ],
           };
         }
 
-        case 'get_component': {
+        case "get_component": {
           // Validate and parse input
           const parsedArgs = GetComponentSchema.parse(args);
           const component = await getComponent(parsedArgs.name);
@@ -188,7 +208,7 @@ async function main() {
             return {
               content: [
                 {
-                  type: 'text',
+                  type: "text",
                   text: dedent`
                     Component "${parsedArgs.name}" not found.
 
@@ -205,19 +225,23 @@ async function main() {
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text: dedent`
                   # ${component.name}
 
-                  ${component.description || 'No description available.'}
+                  ${component.description || "No description available."}
 
                   ## Props (${Object.keys(component.props).length})
                   ${JSON.stringify(component.props, null, 2)}
 
-                  ## Data Attributes (${Object.keys(component.dataAttributes).length})
+                  ## Data Attributes (${
+                    Object.keys(component.dataAttributes).length
+                  })
                   ${JSON.stringify(component.dataAttributes, null, 2)}
 
-                  ## CSS Variables (${Object.keys(component.cssVariables).length})
+                  ## CSS Variables (${
+                    Object.keys(component.cssVariables).length
+                  })
                   ${JSON.stringify(component.cssVariables, null, 2)}
                 `,
               },
@@ -225,7 +249,7 @@ async function main() {
           };
         }
 
-        case 'list_components': {
+        case "list_components": {
           // Validate and parse input
           const parsedArgs = ListComponentsSchema.parse(args);
           const components = await listComponents(parsedArgs.limit);
@@ -233,31 +257,43 @@ async function main() {
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text: dedent`
                   # Base UI Components (${components.length} total)
 
                   ${components
                     .map(
                       (c) =>
-                        `## ${c.name}\n${c.description || 'No description'}\n- Props: ${Object.keys(c.props).length}\n- Data Attributes: ${Object.keys(c.dataAttributes).length}`,
+                        `## ${c.name}\n${
+                          c.description || "No description"
+                        }\n- Props: ${
+                          Object.keys(c.props).length
+                        }\n- Data Attributes: ${
+                          Object.keys(c.dataAttributes).length
+                        }`
                     )
-                    .join('\n\n')}
+                    .join("\n\n")}
                 `,
               },
             ],
           };
         }
 
-        case 'get_component_examples': {
+        case "get_component_examples": {
           const parsedArgs = GetComponentExamplesSchema.parse(args);
-          const examples = await getExamples(parsedArgs.name, parsedArgs.variant);
+          const examples = await getExamples(
+            parsedArgs.name,
+            parsedArgs.variant
+          );
 
-          if (examples.demos.length === 0 && examples.inlineExamples.length === 0) {
+          if (
+            examples.demos.length === 0 &&
+            examples.inlineExamples.length === 0
+          ) {
             return {
               content: [
                 {
-                  type: 'text',
+                  type: "text",
                   text: dedent`
                     No examples found for component "${parsedArgs.name}".
 
@@ -300,25 +336,25 @@ async function main() {
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text: response,
               },
             ],
           };
         }
 
-        case 'get_specific_demo': {
+        case "get_specific_demo": {
           const parsedArgs = GetSpecificDemoSchema.parse(args);
           const demo = await getDemo(
             parsedArgs.componentName,
             parsedArgs.demoName,
-            parsedArgs.variant,
+            parsedArgs.variant
           );
 
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text: dedent`
                   # ${demo.description} (${demo.variant})
 
@@ -326,21 +362,25 @@ async function main() {
                   ${demo.code}
                   \`\`\`
 
-                  ${demo.cssCode ? `## CSS\n\n\`\`\`css\n${demo.cssCode}\n\`\`\`` : ''}
+                  ${
+                    demo.cssCode
+                      ? `## CSS\n\n\`\`\`css\n${demo.cssCode}\n\`\`\``
+                      : ""
+                  }
                 `,
               },
             ],
           };
         }
 
-        case 'get_installation_guide': {
+        case "get_installation_guide": {
           const parsedArgs = GetInstallationGuideSchema.parse(args);
           const guide = await getInstallationGuide(parsedArgs.componentNames);
 
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text: dedent`
                   # Installation Guide
 
@@ -368,7 +408,7 @@ async function main() {
 
                   ## Import
 
-                  ${guide.imports.join('\n')}
+                  ${guide.imports.join("\n")}
 
                   ## Basic Usage
 
@@ -376,7 +416,14 @@ async function main() {
                   ${guide.basicUsage}
                   \`\`\`
 
-                  ${guide.relatedComponents && guide.relatedComponents.length > 0 ? `## Related Components\n\n${guide.relatedComponents.join(', ')}` : ''}
+                  ${
+                    guide.relatedComponents &&
+                    guide.relatedComponents.length > 0
+                      ? `## Related Components\n\n${guide.relatedComponents.join(
+                          ", "
+                        )}`
+                      : ""
+                  }
 
                   ## Styling
 
@@ -387,14 +434,14 @@ async function main() {
           };
         }
 
-        case 'get_component_dependencies': {
+        case "get_component_dependencies": {
           const parsedArgs = GetComponentDependenciesSchema.parse(args);
           const deps = await getComponentDependencies(parsedArgs.name);
 
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text: dedent`
                   # Dependencies for ${deps.component}
 
@@ -405,34 +452,36 @@ async function main() {
                   ${JSON.stringify(deps.peerDependencies, null, 2)}
 
                   ## Related Components
-                  ${deps.relatedComponents.join(', ')}
+                  ${deps.relatedComponents.join(", ")}
 
                   ## Required Parts
-                  ${deps.requiredParts.join(', ')}
+                  ${deps.requiredParts.join(", ")}
 
                   ## Optional Parts
-                  ${deps.optionalParts.join(', ')}
+                  ${deps.optionalParts.join(", ")}
                 `,
               },
             ],
           };
         }
 
-        case 'get_setup_checklist': {
+        case "get_setup_checklist": {
           GetSetupChecklistSchema.parse(args);
           const checklist = await getSetupChecklist();
 
-          let response = '# Base UI Setup Checklist\n\n';
-          
+          let response = "# Base UI Setup Checklist\n\n";
+
           checklist.items.forEach((item, index) => {
-            response += `## ${index + 1}. ${item.title} ${item.required ? '(Required)' : '(Optional)'}\n\n`;
+            response += `## ${index + 1}. ${item.title} ${
+              item.required ? "(Required)" : "(Optional)"
+            }\n\n`;
             response += `${item.description}\n\n`;
             if (item.checkCommand) {
               response += `**Verify:** \`${item.checkCommand}\`\n\n`;
             }
           });
 
-          response += '## Troubleshooting\n\n';
+          response += "## Troubleshooting\n\n";
           checklist.troubleshooting.forEach((item) => {
             response += `**Issue:** ${item.issue}\n\n`;
             response += `**Solution:** ${item.solution}\n\n`;
@@ -441,7 +490,7 @@ async function main() {
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text: response,
               },
             ],
@@ -457,10 +506,12 @@ async function main() {
         return {
           content: [
             {
-              type: 'text',
+              type: "text",
               text: dedent`
                 Invalid input parameters:
-                ${error.errors.map((err) => `- ${err.path.join('.')}: ${err.message}`).join('\n')}
+                ${error.errors
+                  .map((err) => `- ${err.path.join(".")}: ${err.message}`)
+                  .join("\n")}
               `,
             },
           ],
@@ -477,13 +528,17 @@ async function main() {
         }
 
         if (error.context) {
-          errorMessage += `\n\nContext: ${JSON.stringify(error.context, null, 2)}`;
+          errorMessage += `\n\nContext: ${JSON.stringify(
+            error.context,
+            null,
+            2
+          )}`;
         }
 
         return {
           content: [
             {
-              type: 'text',
+              type: "text",
               text: dedent`
                 Error (${error.code}): ${errorMessage}
               `,
@@ -494,13 +549,14 @@ async function main() {
       }
 
       // Handle unknown errors
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('Unexpected error:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Unexpected error:", error);
 
       return {
         content: [
           {
-            type: 'text',
+            type: "text",
             text: dedent`
               Error: ${errorMessage}
 
@@ -517,10 +573,10 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('MCP Server started successfully');
+  console.error("MCP Server started successfully");
 }
 
 main().catch((error) => {
-  console.error('Failed to start server:', error);
+  console.error("Failed to start server:", error);
   process.exit(1);
 });

@@ -1,5 +1,5 @@
-import { BaseUIComponent } from '../types.js';
-import { getComponent } from './component-tools.js';
+import { BaseUIComponent } from "../types.js";
+import { getComponent } from "./component-tools.js";
 
 export interface InstallationGuide {
   packageName: string;
@@ -36,65 +36,78 @@ export interface SetupChecklist {
  * Get installation guide for one or more components
  */
 export async function getInstallationGuide(
-  componentNames: string[],
+  componentNames: string[]
 ): Promise<InstallationGuide> {
   const components: BaseUIComponent[] = [];
   const relatedComponentsSet = new Set<string>();
-  
+
   // Fetch all requested components
   for (const name of componentNames) {
     const component = await getComponent(name);
     if (component) {
       components.push(component);
-      
+
       // Extract related components from component name patterns
       // e.g., DialogRoot, DialogTrigger, DialogPopup all belong to Dialog family
-      const family = name.replace(/Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi, '');
+      const family = name.replace(
+        /Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi,
+        ""
+      );
       if (family && family !== name) {
         relatedComponentsSet.add(family);
       }
     }
   }
-  
+
   if (components.length === 0) {
-    throw new Error(`No components found for: ${componentNames.join(', ')}`);
+    throw new Error(`No components found for: ${componentNames.join(", ")}`);
   }
-  
+
   // Get the main component family name
   const mainComponent = components[0].name;
   const componentFamily = mainComponent
-    .replace(/Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi, '')
+    .replace(
+      /Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi,
+      ""
+    )
     .toLowerCase();
-  
+
   // Generate imports
   const imports: string[] = [];
   const uniqueFamilies = new Set<string>();
-  
+
   for (const component of components) {
     const family = component.name
-      .replace(/Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi, '')
+      .replace(
+        /Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi,
+        ""
+      )
       .toLowerCase();
     uniqueFamilies.add(family);
   }
-  
+
   uniqueFamilies.forEach((family) => {
     const importPath = family ? family : componentFamily;
-    imports.push(`import { ${formatComponentName(importPath)} } from '@base-ui-components/react/${importPath}';`);
+    imports.push(
+      `import { ${formatComponentName(
+        importPath
+      )} } from '@base-ui-components/react/${importPath}';`
+    );
   });
-  
+
   // Generate basic usage based on the component type
   const basicUsage = generateBasicUsage(mainComponent);
-  
+
   return {
-    packageName: '@base-ui-components/react',
+    packageName: "@base-ui-components/react",
     installCommand: {
-      npm: 'npm install @base-ui-components/react',
-      yarn: 'yarn add @base-ui-components/react',
-      pnpm: 'pnpm add @base-ui-components/react',
+      npm: "npm install @base-ui-components/react",
+      yarn: "yarn add @base-ui-components/react",
+      pnpm: "pnpm add @base-ui-components/react",
     },
     peerDependencies: {
-      react: '^18.0.0 || ^19.0.0',
-      reactDom: '^18.0.0 || ^19.0.0',
+      react: "^18.0.0 || ^19.0.0",
+      reactDom: "^18.0.0 || ^19.0.0",
     },
     imports,
     basicUsage,
@@ -130,72 +143,73 @@ export async function getSetupChecklist(): Promise<SetupChecklist> {
   return {
     items: [
       {
-        id: 'install-base-ui',
-        title: 'Install Base UI',
-        description: 'Install @base-ui-components/react package',
+        id: "install-base-ui",
+        title: "Install Base UI",
+        description: "Install @base-ui-components/react package",
         required: true,
-        checkCommand: 'npm list @base-ui-components/react',
+        checkCommand: "npm list @base-ui-components/react",
       },
       {
-        id: 'react-version',
-        title: 'Check React Version',
-        description: 'Ensure React version is 18.0.0 or higher',
+        id: "react-version",
+        title: "Check React Version",
+        description: "Ensure React version is 18.0.0 or higher",
         required: true,
-        checkCommand: 'npm list react',
+        checkCommand: "npm list react",
       },
       {
-        id: 'typescript',
-        title: 'TypeScript Configuration (Optional)',
+        id: "typescript",
+        title: "TypeScript Configuration (Optional)",
         description:
           'If using TypeScript, ensure your tsconfig.json has "moduleResolution": "bundler" or "node16"',
         required: false,
       },
       {
-        id: 'css-setup',
-        title: 'CSS/Styling Setup',
+        id: "css-setup",
+        title: "CSS/Styling Setup",
         description:
-          'Base UI components are unstyled. Set up your preferred styling solution (CSS Modules, Tailwind, Styled Components, etc.)',
+          "Base UI components are unstyled. Set up your preferred styling solution (CSS Modules, Tailwind, Styled Components, etc.)",
         required: true,
       },
       {
-        id: 'import-test',
-        title: 'Test Component Import',
-        description: 'Try importing a component to verify the setup',
+        id: "import-test",
+        title: "Test Component Import",
+        description: "Try importing a component to verify the setup",
         required: true,
         checkCommand: `node -e "require('@base-ui-components/react/button')"`,
       },
       {
-        id: 'accessibility',
-        title: 'Review Accessibility Features',
+        id: "accessibility",
+        title: "Review Accessibility Features",
         description:
-          'Base UI components follow WAI-ARIA patterns. Review the accessibility features of the components you use.',
+          "Base UI components follow WAI-ARIA patterns. Review the accessibility features of the components you use.",
         required: false,
       },
     ],
     troubleshooting: [
       {
-        issue: 'Module not found: @base-ui-components/react',
+        issue: "Module not found: @base-ui-components/react",
         solution:
-          'Run the install command: npm install @base-ui-components/react. Make sure you are in the correct directory.',
+          "Run the install command: npm install @base-ui-components/react. Make sure you are in the correct directory.",
       },
       {
-        issue: 'React version incompatibility',
-        solution: 'Upgrade React to version 18.0.0 or higher: npm install react@^18 react-dom@^18',
+        issue: "React version incompatibility",
+        solution:
+          "Upgrade React to version 18.0.0 or higher: npm install react@^18 react-dom@^18",
       },
       {
-        issue: 'TypeScript errors with imports',
+        issue: "TypeScript errors with imports",
         solution:
           'Update your tsconfig.json to include "moduleResolution": "bundler" and ensure "jsx" is set to "react-jsx" or "react"',
       },
       {
-        issue: 'Components have no styling',
+        issue: "Components have no styling",
         solution:
-          'Base UI components are unstyled by default. Add your own styles using className prop and your preferred CSS solution.',
+          "Base UI components are unstyled by default. Add your own styles using className prop and your preferred CSS solution.",
       },
       {
-        issue: 'ESM/CommonJS module errors',
+        issue: "ESM/CommonJS module errors",
         solution:
-          'Base UI uses ESM. If using CommonJS, you may need to update your build configuration or use dynamic imports.',
+          "Base UI uses ESM. If using CommonJS, you may need to update your build configuration or use dynamic imports.",
       },
     ],
   };
@@ -213,28 +227,31 @@ export async function getComponentDependencies(componentName: string): Promise<{
   optionalParts: string[];
 }> {
   const component = await getComponent(componentName);
-  
+
   if (!component) {
     throw new Error(`Component "${componentName}" not found`);
   }
-  
+
   // Determine component family
   const family = componentName.replace(
     /Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value|Positioner|Arrow|Title|Description/gi,
-    '',
+    ""
   );
-  
+
   // Get related components based on common patterns
   const relatedComponents = getRelatedComponentsByFamily(family);
-  
+
   // Determine required vs optional parts based on component type
-  const { required, optional } = categorizeComponentParts(family, relatedComponents);
-  
+  const { required, optional } = categorizeComponentParts(
+    family,
+    relatedComponents
+  );
+
   return {
     component: componentName,
     peerDependencies: {
-      react: '^18.0.0 || ^19.0.0',
-      'react-dom': '^18.0.0 || ^19.0.0',
+      react: "^18.0.0 || ^19.0.0",
+      "react-dom": "^18.0.0 || ^19.0.0",
     },
     relatedComponents,
     componentFamily: family,
@@ -255,10 +272,13 @@ function formatComponentName(name: string): string {
  */
 function generateBasicUsage(componentName: string): string {
   const family = componentName
-    .replace(/Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi, '')
+    .replace(
+      /Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi,
+      ""
+    )
     .toLowerCase();
   const Component = formatComponentName(family);
-  
+
   // Component-specific usage patterns
   const usagePatterns: Record<string, string> = {
     dialog: `<Dialog.Root>
@@ -309,7 +329,7 @@ function generateBasicUsage(componentName: string): string {
   <Checkbox.Indicator />
 </Checkbox.Root>`,
   };
-  
+
   return (
     usagePatterns[family] ||
     `<${Component}.Root>
@@ -323,19 +343,74 @@ function generateBasicUsage(componentName: string): string {
  */
 function getRelatedComponentsByFamily(family: string): string[] {
   const componentFamilies: Record<string, string[]> = {
-    Dialog: ['DialogRoot', 'DialogTrigger', 'DialogPortal', 'DialogBackdrop', 'DialogPopup', 'DialogTitle', 'DialogDescription', 'DialogClose'],
-    Popover: ['PopoverRoot', 'PopoverTrigger', 'PopoverPortal', 'PopoverBackdrop', 'PopoverPositioner', 'PopoverPopup', 'PopoverArrow', 'PopoverClose'],
-    Menu: ['MenuRoot', 'MenuTrigger', 'MenuPortal', 'MenuPositioner', 'MenuPopup', 'MenuItem', 'MenuArrow', 'MenuSeparator'],
-    Select: ['SelectRoot', 'SelectTrigger', 'SelectPortal', 'SelectPositioner', 'SelectPopup', 'SelectOption', 'SelectValue'],
-    Slider: ['SliderRoot', 'SliderControl', 'SliderTrack', 'SliderIndicator', 'SliderThumb', 'SliderValue'],
-    Switch: ['SwitchRoot', 'SwitchThumb'],
-    Checkbox: ['CheckboxRoot', 'CheckboxIndicator'],
-    Radio: ['RadioRoot', 'RadioIndicator'],
-    Accordion: ['AccordionRoot', 'AccordionItem', 'AccordionHeader', 'AccordionTrigger', 'AccordionPanel'],
-    Tabs: ['TabsRoot', 'TabsList', 'TabsTab', 'TabsPanel'],
-    Tooltip: ['TooltipRoot', 'TooltipTrigger', 'TooltipPortal', 'TooltipPositioner', 'TooltipPopup', 'TooltipArrow'],
+    Dialog: [
+      "DialogRoot",
+      "DialogTrigger",
+      "DialogPortal",
+      "DialogBackdrop",
+      "DialogPopup",
+      "DialogTitle",
+      "DialogDescription",
+      "DialogClose",
+    ],
+    Popover: [
+      "PopoverRoot",
+      "PopoverTrigger",
+      "PopoverPortal",
+      "PopoverBackdrop",
+      "PopoverPositioner",
+      "PopoverPopup",
+      "PopoverArrow",
+      "PopoverClose",
+    ],
+    Menu: [
+      "MenuRoot",
+      "MenuTrigger",
+      "MenuPortal",
+      "MenuPositioner",
+      "MenuPopup",
+      "MenuItem",
+      "MenuArrow",
+      "MenuSeparator",
+    ],
+    Select: [
+      "SelectRoot",
+      "SelectTrigger",
+      "SelectPortal",
+      "SelectPositioner",
+      "SelectPopup",
+      "SelectOption",
+      "SelectValue",
+    ],
+    Slider: [
+      "SliderRoot",
+      "SliderControl",
+      "SliderTrack",
+      "SliderIndicator",
+      "SliderThumb",
+      "SliderValue",
+    ],
+    Switch: ["SwitchRoot", "SwitchThumb"],
+    Checkbox: ["CheckboxRoot", "CheckboxIndicator"],
+    Radio: ["RadioRoot", "RadioIndicator"],
+    Accordion: [
+      "AccordionRoot",
+      "AccordionItem",
+      "AccordionHeader",
+      "AccordionTrigger",
+      "AccordionPanel",
+    ],
+    Tabs: ["TabsRoot", "TabsList", "TabsTab", "TabsPanel"],
+    Tooltip: [
+      "TooltipRoot",
+      "TooltipTrigger",
+      "TooltipPortal",
+      "TooltipPositioner",
+      "TooltipPopup",
+      "TooltipArrow",
+    ],
   };
-  
+
   return componentFamilies[family] || [];
 }
 
@@ -344,20 +419,28 @@ function getRelatedComponentsByFamily(family: string): string[] {
  */
 function categorizeComponentParts(
   family: string,
-  relatedComponents: string[],
+  relatedComponents: string[]
 ): { required: string[]; optional: string[] } {
   // Common patterns for required vs optional parts
-  const requiredPatterns = ['Root', 'Trigger', 'Popup', 'Control', 'Track'];
-  const optionalPatterns = ['Portal', 'Backdrop', 'Arrow', 'Close', 'Title', 'Description', 'Value', 'Indicator'];
-  
+  const requiredPatterns = ["Root", "Trigger", "Popup", "Control", "Track"];
+  const optionalPatterns = [
+    "Portal",
+    "Backdrop",
+    "Arrow",
+    "Close",
+    "Title",
+    "Description",
+    "Value",
+    "Indicator",
+  ];
+
   const required = relatedComponents.filter((comp) =>
-    requiredPatterns.some((pattern) => comp.includes(pattern)),
+    requiredPatterns.some((pattern) => comp.includes(pattern))
   );
-  
+
   const optional = relatedComponents.filter((comp) =>
-    optionalPatterns.some((pattern) => comp.includes(pattern)),
+    optionalPatterns.some((pattern) => comp.includes(pattern))
   );
-  
+
   return { required, optional };
 }
-

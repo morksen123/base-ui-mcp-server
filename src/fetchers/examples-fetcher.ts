@@ -1,16 +1,16 @@
-import { BaseUIError } from '../errors/registry-error.js';
+import { BaseUIError } from "../errors/registry-error.js";
 
-const GITHUB_API_BASE = 'https://api.github.com/repos/mui/base-ui';
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/mui/base-ui/master';
-const DOCS_PATH = 'docs/src/app/(public)/(content)/react/components';
+const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
+const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/mui/base-ui/master";
+const DOCS_PATH = "docs/src/app/(public)/(content)/react/components";
 
 export interface ComponentExample {
   name: string;
   description: string;
   code: string;
   cssCode?: string;
-  language: 'tsx' | 'jsx';
-  variant: 'css-modules' | 'tailwind';
+  language: "tsx" | "jsx";
+  variant: "css-modules" | "tailwind";
 }
 
 export interface ComponentExamples {
@@ -27,13 +27,13 @@ export interface ComponentExamples {
  * Fetch the directory structure for a component's demos
  */
 async function fetchDemosList(componentName: string): Promise<string[]> {
-  const component = componentName.toLowerCase().replace(/root$/, '');
+  const component = componentName.toLowerCase().replace(/root$/, "");
   const url = `${GITHUB_API_BASE}/contents/${DOCS_PATH}/${component}/demos`;
 
   try {
     const response = await fetch(url, {
       headers: {
-        Accept: 'application/vnd.github.v3+json',
+        Accept: "application/vnd.github.v3+json",
       },
     });
 
@@ -46,7 +46,7 @@ async function fetchDemosList(componentName: string): Promise<string[]> {
 
     const data = await response.json();
     return data
-      .filter((item: any) => item.type === 'dir')
+      .filter((item: any) => item.type === "dir")
       .map((item: any) => item.name);
   } catch (error) {
     console.error(`Failed to fetch demos list for ${componentName}:`, error);
@@ -60,9 +60,9 @@ async function fetchDemosList(componentName: string): Promise<string[]> {
 async function fetchDemoCode(
   componentName: string,
   demoName: string,
-  variant: 'css-modules' | 'tailwind' = 'css-modules',
+  variant: "css-modules" | "tailwind" = "css-modules"
 ): Promise<{ tsx: string; css?: string } | null> {
-  const component = componentName.toLowerCase().replace(/root$/, '');
+  const component = componentName.toLowerCase().replace(/root$/, "");
   const basePath = `${GITHUB_RAW_BASE}/${DOCS_PATH}/${component}/demos/${demoName}/${variant}`;
 
   try {
@@ -75,7 +75,7 @@ async function fetchDemoCode(
 
     // Try to fetch CSS if it's css-modules variant
     let css: string | undefined;
-    if (variant === 'css-modules') {
+    if (variant === "css-modules") {
       const cssResponse = await fetch(`${basePath}/index.module.css`);
       if (cssResponse.ok) {
         css = await cssResponse.text();
@@ -84,7 +84,10 @@ async function fetchDemoCode(
 
     return { tsx, css };
   } catch (error) {
-    console.error(`Failed to fetch demo code for ${componentName}/${demoName}:`, error);
+    console.error(
+      `Failed to fetch demo code for ${componentName}/${demoName}:`,
+      error
+    );
     return null;
   }
 }
@@ -93,7 +96,7 @@ async function fetchDemoCode(
  * Fetch the page.mdx content to extract anatomy and inline examples
  */
 async function fetchPageContent(componentName: string): Promise<string | null> {
-  const component = componentName.toLowerCase().replace(/root$/, '');
+  const component = componentName.toLowerCase().replace(/root$/, "");
   const url = `${GITHUB_RAW_BASE}/${DOCS_PATH}/${component}/page.mdx`;
 
   try {
@@ -113,74 +116,87 @@ async function fetchPageContent(componentName: string): Promise<string | null> {
  */
 function parseAnatomy(pageContent: string): string {
   const anatomyMatch = pageContent.match(/```jsx title="Anatomy"([\s\S]*?)```/);
-  return anatomyMatch ? anatomyMatch[1].trim() : '';
+  return anatomyMatch ? anatomyMatch[1].trim() : "";
 }
 
 /**
  * Parse inline examples from page content
  */
-function parseInlineExamples(pageContent: string): Array<{ title: string; code: string }> {
+function parseInlineExamples(
+  pageContent: string
+): Array<{ title: string; code: string }> {
   const examples: Array<{ title: string; code: string }> = [];
-  
+
   // Match code blocks with titles, excluding the anatomy block
-  const codeBlockRegex = /```(?:tsx|jsx|js)(?:\s+title="([^"]+)")?([\s\S]*?)```/g;
+  const codeBlockRegex =
+    /```(?:tsx|jsx|js)(?:\s+title="([^"]+)")?([\s\S]*?)```/g;
   let match;
-  
+
   while ((match = codeBlockRegex.exec(pageContent)) !== null) {
-    const title = match[1] || 'Example';
+    const title = match[1] || "Example";
     const code = match[2].trim();
-    
+
     // Skip the anatomy block
-    if (title !== 'Anatomy' && code.length > 0) {
+    if (title !== "Anatomy" && code.length > 0) {
       examples.push({ title, code });
     }
   }
-  
+
   return examples;
 }
 
 /**
  * Get all examples for a component
  */
-export async function getComponentExamples(componentName: string): Promise<ComponentExamples> {
+export async function getComponentExamples(
+  componentName: string
+): Promise<ComponentExamples> {
   // Fetch demos list
   const demoNames = await fetchDemosList(componentName);
-  
+
   // Fetch page content for anatomy and inline examples
   const pageContent = await fetchPageContent(componentName);
-  const anatomy = pageContent ? parseAnatomy(pageContent) : '';
+  const anatomy = pageContent ? parseAnatomy(pageContent) : "";
   const inlineExamples = pageContent ? parseInlineExamples(pageContent) : [];
-  
+
   // Fetch code for each demo (both CSS Modules and Tailwind variants)
   const demos: ComponentExample[] = [];
-  
+
   for (const demoName of demoNames) {
     // Fetch CSS Modules variant
-    const cssModulesCode = await fetchDemoCode(componentName, demoName, 'css-modules');
+    const cssModulesCode = await fetchDemoCode(
+      componentName,
+      demoName,
+      "css-modules"
+    );
     if (cssModulesCode) {
       demos.push({
         name: demoName,
         description: formatDemoName(demoName),
         code: cssModulesCode.tsx,
         cssCode: cssModulesCode.css,
-        language: 'tsx',
-        variant: 'css-modules',
+        language: "tsx",
+        variant: "css-modules",
       });
     }
-    
+
     // Fetch Tailwind variant
-    const tailwindCode = await fetchDemoCode(componentName, demoName, 'tailwind');
+    const tailwindCode = await fetchDemoCode(
+      componentName,
+      demoName,
+      "tailwind"
+    );
     if (tailwindCode) {
       demos.push({
         name: demoName,
         description: formatDemoName(demoName),
         code: tailwindCode.tsx,
-        language: 'tsx',
-        variant: 'tailwind',
+        language: "tsx",
+        variant: "tailwind",
       });
     }
   }
-  
+
   return {
     componentName,
     demos,
@@ -194,9 +210,9 @@ export async function getComponentExamples(componentName: string): Promise<Compo
  */
 function formatDemoName(demoName: string): string {
   return demoName
-    .split('-')
+    .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .join(" ");
 }
 
 /**
@@ -205,21 +221,20 @@ function formatDemoName(demoName: string): string {
 export async function getSpecificDemo(
   componentName: string,
   demoName: string,
-  variant: 'css-modules' | 'tailwind' = 'css-modules',
+  variant: "css-modules" | "tailwind" = "css-modules"
 ): Promise<ComponentExample | null> {
   const code = await fetchDemoCode(componentName, demoName, variant);
-  
+
   if (!code) {
     return null;
   }
-  
+
   return {
     name: demoName,
     description: formatDemoName(demoName),
     code: code.tsx,
     cssCode: code.css,
-    language: 'tsx',
+    language: "tsx",
     variant,
   };
 }
-
