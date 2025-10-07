@@ -1,5 +1,6 @@
 import { BaseUIComponent, BaseUIComponentSchema } from "../types.js";
 import { FetchError, ValidationError } from "../errors/registry-error.js";
+import { FALLBACK_COMPONENT_NAMES } from "../constants/fallback-components.js";
 
 const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
 const GITHUB_RAW_BASE_URL =
@@ -48,99 +49,7 @@ export async function fetchAvailableComponentNames(): Promise<string[]> {
  * Fallback component list in case GitHub API is unavailable
  */
 function getFallbackComponentNames(): string[] {
-  return [
-    // Accordion
-    "accordion-root",
-    "accordion-header",
-    "accordion-item",
-    "accordion-panel",
-    "accordion-trigger",
-    // Alert Dialog
-    "alert-dialog-root",
-    "alert-dialog-backdrop",
-    "alert-dialog-close",
-    "alert-dialog-description",
-    "alert-dialog-popup",
-    "alert-dialog-portal",
-    "alert-dialog-title",
-    "alert-dialog-trigger",
-    // Avatar
-    "avatar-root",
-    "avatar-image",
-    "avatar-fallback",
-    // Checkbox
-    "checkbox-root",
-    "checkbox-indicator",
-    // Collapsible
-    "collapsible-root",
-    "collapsible-trigger",
-    "collapsible-content",
-    // Dialog
-    "dialog-root",
-    "dialog-backdrop",
-    "dialog-close",
-    "dialog-description",
-    "dialog-popup",
-    "dialog-portal",
-    "dialog-title",
-    "dialog-trigger",
-    // Field
-    "field-root",
-    "field-control",
-    "field-description",
-    "field-error",
-    "field-label",
-    "field-validity",
-    // Input
-    "input",
-    // Menu
-    "menu-root",
-    "menu-trigger",
-    "menu-portal",
-    "menu-positioner",
-    "menu-popup",
-    "menu-item",
-    "menu-arrow",
-    // Popover
-    "popover-root",
-    "popover-trigger",
-    "popover-portal",
-    "popover-positioner",
-    "popover-popup",
-    "popover-arrow",
-    "popover-backdrop",
-    "popover-close",
-    // Select
-    "select-root",
-    "select-trigger",
-    "select-portal",
-    "select-positioner",
-    "select-popup",
-    "select-option",
-    "select-value",
-    // Slider
-    "slider-root",
-    "slider-control",
-    "slider-track",
-    "slider-indicator",
-    "slider-thumb",
-    "slider-value",
-    // Switch
-    "switch-root",
-    "switch-thumb",
-    // Tabs
-    "tabs-root",
-    "tabs-list",
-    "tabs-tab",
-    "tabs-panel",
-    // Tooltip
-    "tooltip-root",
-    "tooltip-trigger",
-    "tooltip-portal",
-    "tooltip-positioner",
-    "tooltip-popup",
-    "tooltip-arrow",
-  ];
+  return [...FALLBACK_COMPONENT_NAMES];
 }
 
 /**
