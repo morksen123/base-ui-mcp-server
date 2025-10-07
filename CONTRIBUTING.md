@@ -41,18 +41,28 @@ Thank you for your interest in contributing! This document provides guidelines a
 ```
 base-ui-mcp-server/
 ├── src/
-│   ├── index.ts              # Main server entry point
-│   ├── types.ts              # TypeScript types and Zod schemas
-│   ├── constants/            # Constants and fallback data
-│   ├── errors/               # Custom error classes
-│   ├── fetchers/             # GitHub and examples fetching
-│   ├── tools/                # MCP tool implementations
-│   └── utils/                # Utility functions
-├── test/                     # Vitest test suites
-│   ├── search-components.test.ts
-│   └── github-fetcher.test.ts
-└── dist/                     # Compiled output (generated)
+│   ├── index.ts                        # Main server entry point
+│   ├── types.ts                        # TypeScript types and Zod schemas
+│   ├── constants/                      # Constants and fallback data
+│   │   └── fallback-components.ts
+│   ├── errors/                         # Custom error classes
+│   │   └── registry-error.ts
+│   ├── fetchers/                       # GitHub and examples fetching
+│   │   ├── github-fetcher.ts
+│   │   ├── github-fetcher.test.ts     # Tests colocated with source
+│   │   └── examples-fetcher.ts
+│   ├── tools/                          # MCP tool implementations
+│   │   ├── component-tools.ts
+│   │   ├── component-tools.test.ts    # Tests colocated with source
+│   │   ├── examples-tools.ts
+│   │   └── installation-tools.ts
+│   └── utils/                          # Utility functions
+│       ├── search-utils.ts
+│       └── search-utils.test.ts       # Tests colocated with source
+└── dist/                               # Compiled output (generated)
 ```
+
+> **Note**: Following shadcn's pattern, test files are colocated with their source files for better maintainability.
 
 ## Coding Standards
 
@@ -82,8 +92,8 @@ base-ui-mcp-server/
 Always use custom error classes from `src/errors/`:
 
 ```typescript
-throw new ComponentNotFoundError('Button', {
-  suggestion: 'Try searching for the component first',
+throw new ComponentNotFoundError("Button", {
+  suggestion: "Try searching for the component first",
 });
 ```
 
@@ -93,7 +103,7 @@ Use Zod schemas for all input validation:
 
 ```typescript
 const MySchema = z.object({
-  name: z.string().min(1, 'Name must not be empty'),
+  name: z.string().min(1, "Name must not be empty"),
   limit: z.number().int().positive().max(100),
 });
 
@@ -111,26 +121,37 @@ npm test -- --run
 # Run tests in watch mode
 npm run test:watch
 
-# Run specific test file
-npm test -- test/search-components.test.ts --run
-npm test -- test/github-fetcher.test.ts --run
+# Run specific test file (tests are colocated with source)
+npm test -- src/utils/search-utils.test.ts --run
+npm test -- src/fetchers/github-fetcher.test.ts --run
+npm test -- src/tools/component-tools.test.ts --run
 ```
 
 ### Writing Tests
 
+**Test Colocation Pattern (following shadcn):**
+
+Tests are colocated with their source files:
+
+- `src/utils/search-utils.ts` → `src/utils/search-utils.test.ts`
+- `src/fetchers/github-fetcher.ts` → `src/fetchers/github-fetcher.test.ts`
+- `src/tools/component-tools.ts` → `src/tools/component-tools.test.ts`
+
 When adding new features:
 
-1. Add tests that verify the feature works
-2. Add tests for error conditions
-3. Ensure test coverage for edge cases
-4. Follow existing test patterns
+1. Create test file next to source file with `.test.ts` extension
+2. Add tests that verify the feature works
+3. Add tests for error conditions
+4. Ensure test coverage for edge cases
+5. Follow existing test patterns
 
 Example test structure using Vitest:
 
 ```typescript
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { newFeature } from "./new-feature.js"; // Relative import
 
-describe('New Feature', () => {
+describe("New Feature", () => {
   beforeEach(() => {
     // Setup before each test
   });
@@ -139,20 +160,20 @@ describe('New Feature', () => {
     // Cleanup after each test
   });
 
-  it('should work correctly', () => {
+  it("should work correctly", () => {
     // Arrange
-    const input = 'test input';
+    const input = "test input";
 
     // Act
     const result = newFeature(input);
 
     // Assert
-    expect(result).toBe('expected output');
+    expect(result).toBe("expected output");
   });
 
-  it('should handle errors gracefully', () => {
+  it("should handle errors gracefully", () => {
     // Test error conditions
-    expect(() => newFeature('')).toThrow('Error message');
+    expect(() => newFeature("")).toThrow("Error message");
   });
 });
 ```
@@ -197,6 +218,7 @@ describe('New Feature', () => {
    ```
 
    Use conventional commit messages:
+
    - `feat:` New feature
    - `fix:` Bug fix
    - `docs:` Documentation changes
@@ -230,7 +252,7 @@ describe('New Feature', () => {
 
    ```typescript
    export const NewToolSchema = z.object({
-     param: z.string().describe('Parameter description'),
+     param: z.string().describe("Parameter description"),
    });
    ```
 
@@ -250,8 +272,8 @@ describe('New Feature', () => {
        tools: [
          // ... existing tools
          {
-           name: 'new_tool',
-           description: 'Tool description',
+           name: "new_tool",
+           description: "Tool description",
            inputSchema: zodToJsonSchema(NewToolSchema),
          },
        ],
@@ -270,11 +292,12 @@ describe('New Feature', () => {
    ```
 
 5. **Add Tests**
-   - Create `test/new-feature.test.ts` in the test/ directory
+   - Create test file colocated with the new feature (e.g., `src/tools/new-tool.test.ts`)
    - Test success cases
    - Test error cases
    - Test edge cases
    - Use Vitest's `describe`, `it`, and `expect` APIs
+   - Follow the test colocation pattern (see Testing section)
 
 ### Adding New Error Types
 
@@ -284,18 +307,18 @@ describe('New Feature', () => {
    export class NewError extends BaseUIError {
      constructor(context: string) {
        super(`Error message: ${context}`, {
-         code: 'NEW_ERROR',
-         suggestion: 'How to fix this error',
+         code: "NEW_ERROR",
+         suggestion: "How to fix this error",
          context: { context },
        });
-       this.name = 'NewError';
+       this.name = "NewError";
      }
    }
    ```
 
 2. **Use the Error**
    ```typescript
-   throw new NewError('context information');
+   throw new NewError("context information");
    ```
 
 ## Component Data
@@ -307,8 +330,8 @@ Components are automatically fetched from the GitHub API. If you need to update 
 ```typescript
 export const FALLBACK_COMPONENT_NAMES: readonly string[] = [
   // ... existing components
-  'new-component-root',
-  'new-component-trigger',
+  "new-component-root",
+  "new-component-trigger",
   // ...
 ] as const;
 ```
@@ -340,7 +363,7 @@ export const FALLBACK_COMPONENT_NAMES: readonly string[] = [
 export async function searchComponents(
   query: string,
   limit: number = 10,
-  options?: SearchOptions,
+  options?: SearchOptions
 ): Promise<BaseUIComponent[]> {
   // Implementation
 }

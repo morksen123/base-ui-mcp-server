@@ -1,9 +1,9 @@
-import { BaseUIComponent } from "../types.js";
+import { BaseUIComponent } from "../types";
 import {
   fetchComponent,
   fetchAllComponents,
   getAvailableComponentNames,
-} from "../fetchers/github-fetcher.js";
+} from "../fetchers/github-fetcher";
 import {
   searchWithScoring,
   searchWithPagination,
@@ -11,7 +11,7 @@ import {
   groupComponentsByFamily,
   getSuggestions,
   PaginatedSearchResults,
-} from "../utils/search-utils.js";
+} from "../utils/search-utils";
 
 /**
  * Get all components (caching handled by github-fetcher)

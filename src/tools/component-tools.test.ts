@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { BaseUIComponent } from "../src/types.js";
+import { BaseUIComponent } from "../types";
 
 // Mock the github-fetcher module
-vi.mock("../src/fetchers/github-fetcher.js", () => ({
+vi.mock("../fetchers/github-fetcher", () => ({
   fetchAllComponents: vi.fn(),
   fetchComponent: vi.fn(),
 }));
@@ -16,14 +16,14 @@ describe("getComponent", () => {
     // Reset all mocks and modules to clear cache
     vi.clearAllMocks();
     vi.resetModules();
-    
+
     // Re-import mocked modules
-    const fetcher = await import("../src/fetchers/github-fetcher.js");
+    const fetcher = await import("../fetchers/github-fetcher");
     fetchAllComponents = fetcher.fetchAllComponents;
     fetchComponent = fetcher.fetchComponent;
 
     // Re-import getComponent function (with cleared cache)
-    const tools = await import("../src/tools/component-tools.js");
+    const tools = await import("./component-tools");
     getComponent = tools.getComponent;
   });
 
@@ -45,9 +45,7 @@ describe("getComponent", () => {
         cssVariables: {},
       };
 
-      fetchAllComponents.mockResolvedValue(
-        new Map([["input", mockComponent]])
-      );
+      fetchAllComponents.mockResolvedValue(new Map([["input", mockComponent]]));
 
       const result = await getComponent("Input");
 
@@ -76,9 +74,7 @@ describe("getComponent", () => {
         cssVariables: {},
       };
 
-      fetchAllComponents.mockResolvedValue(
-        new Map([["input", mockComponent]])
-      );
+      fetchAllComponents.mockResolvedValue(new Map([["input", mockComponent]]));
 
       const result1 = await getComponent("input");
       const result2 = await getComponent("INPUT");

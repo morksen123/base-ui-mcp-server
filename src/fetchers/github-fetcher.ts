@@ -1,6 +1,6 @@
-import { BaseUIComponent, BaseUIComponentSchema } from "../types.js";
-import { FetchError, ValidationError } from "../errors/registry-error.js";
-import { FALLBACK_COMPONENT_NAMES } from "../constants/fallback-components.js";
+import { BaseUIComponent, BaseUIComponentSchema } from "../types";
+import { FetchError, ValidationError } from "../errors/registry-error";
+import { FALLBACK_COMPONENT_NAMES } from "../constants/fallback-components";
 
 const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
 const GITHUB_RAW_BASE_URL =
