@@ -1,4 +1,4 @@
-import { BaseUIComponent } from "../types";
+import { BaseUIComponent } from "@/types";
 import { getComponent } from "./component-tools";
 
 export interface InstallationGuide {

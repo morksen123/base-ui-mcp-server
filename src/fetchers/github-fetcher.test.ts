@@ -4,8 +4,8 @@ import {
   fetchComponent,
   fetchAllComponents,
   clearResourceCache,
-} from "./github-fetcher";
-import { FALLBACK_COMPONENT_NAMES } from "../constants/fallback-components";
+} from "@/fetchers/github-fetcher";
+import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
 
 // Store original fetch
 const originalFetch = global.fetch;

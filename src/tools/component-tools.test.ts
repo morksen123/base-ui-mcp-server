@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { BaseUIComponent } from "../types";
+import { BaseUIComponent } from "@/types";
 
 // Mock the github-fetcher module
-vi.mock("../fetchers/github-fetcher", () => ({
+vi.mock("@/fetchers/github-fetcher", () => ({
   fetchAllComponents: vi.fn(),
   fetchComponent: vi.fn(),
 }));
@@ -18,7 +18,7 @@ describe("getComponent", () => {
     vi.resetModules();
 
     // Re-import mocked modules
-    const fetcher = await import("../fetchers/github-fetcher");
+    const fetcher = await import("@/fetchers/github-fetcher");
     fetchAllComponents = fetcher.fetchAllComponents;
     fetchComponent = fetcher.fetchComponent;
 
