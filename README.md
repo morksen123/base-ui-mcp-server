@@ -8,7 +8,7 @@ An MCP (Model Context Protocol) server that provides AI assistants with direct a
 
 ## 🎯 Overview
 
-This MCP server enables AI assistants to seamlessly interact with the [Base UI](https://base-ui.com) component library. It provides:
+This MCP server enables AI assistants to seamlessly interact with the [Base UI](https://base-ui.com/react/overview/quick-start) component library. It provides:
 
 - 🔍 **Intelligent Search** - Fuzzy matching with relevance scoring
 - 📚 **Component Details** - Props, data attributes, CSS variables
@@ -53,8 +53,8 @@ Following the [shadcn MCP pattern](https://ui.shadcn.com/docs/mcp), this server 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mcp.git
-cd mcp
+git clone https://github.com/morksen123/base-ui-mcp-server.git
+cd base-ui-mcp-server
 
 # Install dependencies
 npm install
@@ -332,13 +332,13 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- [Base UI](https://base-ui.com) - The component library
+- [Base UI](https://base-ui.com/react/overview/about) - The component library by MUI
 - [shadcn](https://ui.shadcn.com/docs/mcp) - MCP pattern inspiration
 - [Model Context Protocol](https://modelcontextprotocol.io/) - Protocol specification
 
 ## 🔗 Related Links
 
-- [Base UI Documentation](https://base-ui.com/react)
+- [Base UI Documentation](https://base-ui.com/react/overview/quick-start)
 - [Base UI GitHub Repository](https://github.com/mui/base-ui)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [shadcn MCP Documentation](https://ui.shadcn.com/docs/mcp)
