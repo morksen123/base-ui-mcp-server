@@ -110,7 +110,7 @@ Search Base UI components by name or description using fuzzy matching.
 
 - `query` (string, required): Search query
 - `limit` (number, optional): Maximum results (default: 10, max: 100)
-- `minScore` (number, optional): Minimum relevance score 0-1 (default: 0.3)
+- `minScore` (number, optional): Minimum relevance score 0-1 (default: 0.7)
 - `includeProps` (boolean, optional): Include props in search (default: true)
 - `includeDataAttributes` (boolean, optional): Include data attributes in search (default: true)
 

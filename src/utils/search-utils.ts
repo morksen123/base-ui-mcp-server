@@ -47,7 +47,7 @@ export function searchWithScoring(
   const {
     limit = 10,
     offset = 0,
-    minScore = 0.3, // Now using normalized 0-1 scale (0.3 = 30% match)
+    minScore = 0.7, // Now using normalized 0-1 scale (0.7 = 70% match)
     includeProps = true,
     includeDataAttributes = true,
   } = options;
@@ -109,7 +109,7 @@ export function searchWithPagination(
   const {
     limit = 10,
     offset = 0,
-    minScore = 0.3, // Now using normalized 0-1 scale (0.3 = 30% match)
+    minScore = 0.7, // Now using normalized 0-1 scale (0.7 = 70% match)
     includeProps = true,
     includeDataAttributes = true,
   } = options;

@@ -55,9 +55,9 @@ export const SearchComponentsSchema = z.object({
     .min(0)
     .max(1)
     .optional()
-    .default(0.3)
+    .default(0.7)
     .describe(
-      "Minimum relevance score (0-1 scale where 1=perfect match, 0.3=30% match, higher=more restrictive)"
+      "Minimum relevance score (0-1 scale where 1=perfect match, 0.7=70% match, higher=more restrictive)"
     ),
   includeProps: z.boolean().optional().describe("Include props in search"),
   includeDataAttributes: z

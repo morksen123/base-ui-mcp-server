@@ -56,7 +56,7 @@ export async function searchComponents(
   const searchResults = searchWithScoring(components, query, {
     limit,
     offset: options?.offset || 0,
-    minScore: options?.minScore || 0.3,
+    minScore: options?.minScore ?? 0.7,
     includeProps: options?.includeProps !== false,
     includeDataAttributes: options?.includeDataAttributes !== false,
   });
@@ -82,7 +82,7 @@ export async function searchComponentsWithPagination(
   return searchWithPagination(components, query, {
     limit,
     offset: options?.offset || 0,
-    minScore: options?.minScore || 0.3,
+    minScore: options?.minScore ?? 0.7,
     includeProps: options?.includeProps !== false,
     includeDataAttributes: options?.includeDataAttributes !== false,
   });

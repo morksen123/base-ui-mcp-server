@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { searchWithScoring, searchWithPagination } from "../src/utils/search-utils.js";
+import {
+  searchWithScoring,
+  searchWithPagination,
+} from "../src/utils/search-utils.js";
 import { BaseUIComponent } from "../src/types.js";
 
 // Mock component data for testing
@@ -15,16 +18,55 @@ const createMockComponent = (
 });
 
 const mockComponents = new Map<string, BaseUIComponent>([
-  ["avatar-root", createMockComponent("AvatarRoot", "Displays a user's profile picture, initials, or fallback icon.")],
-  ["avatar-image", createMockComponent("AvatarImage", "The image to be displayed in the avatar.")],
-  ["avatar-fallback", createMockComponent("AvatarFallback", "Rendered when the image fails to load or when no image is provided.")],
-  ["dialog-root", createMockComponent("DialogRoot", "A popup that opens on top of the entire page.")],
+  [
+    "avatar-root",
+    createMockComponent(
+      "AvatarRoot",
+      "Displays a user's profile picture, initials, or fallback icon."
+    ),
+  ],
+  [
+    "avatar-image",
+    createMockComponent(
+      "AvatarImage",
+      "The image to be displayed in the avatar."
+    ),
+  ],
+  [
+    "avatar-fallback",
+    createMockComponent(
+      "AvatarFallback",
+      "Rendered when the image fails to load or when no image is provided."
+    ),
+  ],
+  [
+    "dialog-root",
+    createMockComponent(
+      "DialogRoot",
+      "A popup that opens on top of the entire page."
+    ),
+  ],
   ["dialog-trigger", createMockComponent("DialogTrigger", "Opens the dialog.")],
-  ["dialog-backdrop", createMockComponent("DialogBackdrop", "A backdrop for the dialog.")],
+  [
+    "dialog-backdrop",
+    createMockComponent("DialogBackdrop", "A backdrop for the dialog."),
+  ],
   ["button", createMockComponent("Button", "A clickable button element.")],
   ["input", createMockComponent("Input", "A text input field.")],
-  ["autocomplete-value", createMockComponent("AutocompleteValue", "The current value of the autocomplete.")],
-  ["navigation-menu-arrow", createMockComponent("NavigationMenuArrow", "Displays an element pointing toward the navigation menu's current anchor.")],
+  [
+    "autocomplete-value",
+    createMockComponent(
+      "AutocompleteValue",
+      "The current value of the autocomplete."
+    ),
+  ],
+  [
+    "navigation-menu-arrow",
+    createMockComponent(
+      "NavigationMenuArrow",
+      "Displays an element pointing toward the navigation menu's current anchor."
+    ),
+  ],
 ]);
 
 describe("searchWithScoring", () => {
@@ -35,24 +77,24 @@ describe("searchWithScoring", () => {
     });
 
     expect(results.length).toBeGreaterThan(0);
-    
+
     // Avatar components should be at the top
     const topResults = results.slice(0, 3);
-    const hasAvatarInTop3 = topResults.every(r => 
+    const hasAvatarInTop3 = topResults.every((r) =>
       r.component.name.toLowerCase().includes("avatar")
     );
-    
+
     expect(hasAvatarInTop3).toBe(true);
-    
+
     // Scores should be between 0 and 1
-    results.forEach(result => {
+    results.forEach((result) => {
       expect(result.score).toBeGreaterThanOrEqual(0);
       expect(result.score).toBeLessThanOrEqual(1);
     });
-    
+
     // Log scores for debugging
     console.log("\nSearch 'avatar' - Top 5 results:");
-    results.slice(0, 5).forEach(r => {
+    results.slice(0, 5).forEach((r) => {
       console.log(`  ${r.component.name}: ${r.score.toFixed(3)}`);
     });
   });
@@ -62,12 +104,12 @@ describe("searchWithScoring", () => {
       limit: 100,
       minScore: 0.3,
     });
-    
+
     const highScoreResults = searchWithScoring(mockComponents, "avatar", {
       limit: 100,
       minScore: 0.7,
     });
-    
+
     const perfectScoreResults = searchWithScoring(mockComponents, "avatar", {
       limit: 100,
       minScore: 0.95,
@@ -80,21 +122,23 @@ describe("searchWithScoring", () => {
 
     // Higher minScore should return fewer or equal results
     expect(highScoreResults.length).toBeLessThanOrEqual(lowScoreResults.length);
-    expect(perfectScoreResults.length).toBeLessThanOrEqual(highScoreResults.length);
-    
+    expect(perfectScoreResults.length).toBeLessThanOrEqual(
+      highScoreResults.length
+    );
+
     // Only Avatar components should match with high score
     if (highScoreResults.length > 0) {
-      highScoreResults.forEach(result => {
+      highScoreResults.forEach((result) => {
         expect(result.component.name.toLowerCase()).toContain("avatar");
       });
     }
-    
+
     // All results should meet minimum score
-    lowScoreResults.forEach(result => {
+    lowScoreResults.forEach((result) => {
       expect(result.score).toBeGreaterThanOrEqual(0.3);
     });
-    
-    highScoreResults.forEach(result => {
+
+    highScoreResults.forEach((result) => {
       expect(result.score).toBeGreaterThanOrEqual(0.7);
     });
   });
@@ -116,7 +160,7 @@ describe("searchWithScoring", () => {
       offset: 0,
       minScore: 0,
     });
-    
+
     const page2 = searchWithScoring(mockComponents, "a", {
       limit: 3,
       offset: 3,
@@ -125,7 +169,7 @@ describe("searchWithScoring", () => {
 
     expect(page1.length).toBeLessThanOrEqual(3);
     expect(page2.length).toBeLessThanOrEqual(3);
-    
+
     // Pages should have different results
     if (page1.length > 0 && page2.length > 0) {
       expect(page1[0].component.name).not.toBe(page2[0].component.name);
@@ -139,7 +183,7 @@ describe("searchWithScoring", () => {
     });
 
     // Should only return Avatar-related components
-    results.forEach(result => {
+    results.forEach((result) => {
       const name = result.component.name.toLowerCase();
       expect(name).toContain("avatar");
     });
@@ -212,12 +256,12 @@ describe("Score normalization", () => {
       limit: 1,
       minScore: 0,
     });
-    
+
     const partialMatch = searchWithScoring(mockComponents, "Ava", {
       limit: 1,
       minScore: 0,
     });
-    
+
     const fuzzyMatch = searchWithScoring(mockComponents, "avtr", {
       limit: 1,
       minScore: 0,
@@ -232,11 +276,10 @@ describe("Score normalization", () => {
     if (exactMatch.length > 0 && partialMatch.length > 0) {
       expect(exactMatch[0].score).toBeGreaterThan(partialMatch[0].score);
     }
-    
+
     // Partial should score higher than fuzzy
     if (partialMatch.length > 0 && fuzzyMatch.length > 0) {
       expect(partialMatch[0].score).toBeGreaterThan(fuzzyMatch[0].score);
     }
   });
 });
-

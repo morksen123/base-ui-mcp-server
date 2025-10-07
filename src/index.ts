@@ -60,7 +60,7 @@ async function main() {
           description: dedent`
             Search Base UI components by name or description using fuzzy matching.
             Returns components with relevance scores (0-1 scale where 1=perfect match).
-            Use minScore to control match quality: 0.3=lenient (default), 0.7=strict, 0.9=near-exact.
+            Use minScore to control match quality: 0.3=lenient, 0.7=strict (default), 0.9=near-exact.
           `,
           inputSchema: zodToJsonSchema(SearchComponentsSchema),
         },
