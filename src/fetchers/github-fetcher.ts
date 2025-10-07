@@ -1,52 +1,63 @@
-import { BaseUIComponent, BaseUIComponentSchema } from '../types.js';
-import { FetchError, ValidationError } from '../errors/registry-error.js';
+import { BaseUIComponent, BaseUIComponentSchema } from "../types.js";
+import { FetchError, ValidationError } from "../errors/registry-error.js";
+import { FALLBACK_COMPONENT_NAMES } from "../constants/fallback-components.js";
 
+const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
 const GITHUB_RAW_BASE_URL =
-  'https://raw.githubusercontent.com/mui/base-ui/master/docs/reference/generated';
+  "https://raw.githubusercontent.com/mui/base-ui/master/docs/reference/generated";
+const REFERENCE_DOCS_PATH = "docs/reference/generated";
 
-// List of all component files in the Base UI repository
-// This will be used to fetch component data
-const COMPONENT_FILES = [
-  // Accordion
-  'accordion-root',
-  'accordion-header',
-  'accordion-item',
-  'accordion-panel',
-  'accordion-trigger',
-  // Alert Dialog
-  'alert-dialog-root',
-  'alert-dialog-backdrop',
-  'alert-dialog-close',
-  'alert-dialog-description',
-  'alert-dialog-popup',
-  'alert-dialog-portal',
-  'alert-dialog-title',
-  'alert-dialog-trigger',
-  // Dialog
-  'dialog-root',
-  'dialog-backdrop',
-  'dialog-close',
-  'dialog-description',
-  'dialog-popup',
-  'dialog-portal',
-  'dialog-title',
-  'dialog-trigger',
-  // Input
-  'input',
-  // Field
-  'field-root',
-  'field-control',
-  'field-description',
-  'field-error',
-  'field-label',
-  'field-validity',
-  // Add more as needed...
-];
+/**
+ * Fetch the list of all component JSON files from GitHub
+ */
+export async function fetchAvailableComponentNames(): Promise<string[]> {
+  const url = `${GITHUB_API_BASE}/contents/${REFERENCE_DOCS_PATH}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new FetchError(
+        url,
+        new Error(`HTTP ${response.status}: ${response.statusText}`)
+      );
+    }
+
+    const data = await response.json();
+
+    // Filter for JSON files and extract names without extension
+    const componentNames = data
+      .filter(
+        (item: any) => item.type === "file" && item.name.endsWith(".json")
+      )
+      .map((item: any) => item.name.replace(".json", ""));
+
+    console.error(`Found ${componentNames.length} components in repository`);
+    return componentNames;
+  } catch (error) {
+    console.error("Failed to fetch component list from GitHub:", error);
+    // Fallback to a basic list if GitHub API fails
+    return getFallbackComponentNames();
+  }
+}
+
+/**
+ * Fallback component list in case GitHub API is unavailable
+ */
+function getFallbackComponentNames(): string[] {
+  return [...FALLBACK_COMPONENT_NAMES];
+}
 
 /**
  * Fetch a single component JSON file from GitHub
  */
-export async function fetchComponent(componentName: string): Promise<BaseUIComponent | null> {
+export async function fetchComponent(
+  componentName: string
+): Promise<BaseUIComponent | null> {
   const url = `${GITHUB_RAW_BASE_URL}/${componentName}.json`;
 
   try {
@@ -55,11 +66,16 @@ export async function fetchComponent(componentName: string): Promise<BaseUICompo
     if (!response.ok) {
       if (response.status === 404) {
         // Component not found - return null (not an error)
-        console.error(`Component ${componentName} not found in GitHub repository`);
+        console.error(
+          `Component ${componentName} not found in GitHub repository`
+        );
         return null;
       }
 
-      throw new FetchError(url, new Error(`HTTP ${response.status}: ${response.statusText}`));
+      throw new FetchError(
+        url,
+        new Error(`HTTP ${response.status}: ${response.statusText}`)
+      );
     }
 
     const data = await response.json();
@@ -81,7 +97,10 @@ export async function fetchComponent(componentName: string): Promise<BaseUICompo
     }
 
     // Network or other errors
-    throw new FetchError(url, error instanceof Error ? error : new Error(String(error)));
+    throw new FetchError(
+      url,
+      error instanceof Error ? error : new Error(String(error))
+    );
   }
 }
 
@@ -89,14 +108,19 @@ export async function fetchComponent(componentName: string): Promise<BaseUICompo
  * Fetch multiple components in parallel
  */
 export async function fetchComponents(
-  componentNames: string[],
+  componentNames: string[]
 ): Promise<Map<string, BaseUIComponent>> {
   const results = new Map<string, BaseUIComponent>();
 
   const promises = componentNames.map(async (name) => {
-    const component = await fetchComponent(name);
-    if (component) {
-      results.set(name, component);
+    try {
+      const component = await fetchComponent(name);
+      if (component) {
+        results.set(name, component);
+      }
+    } catch (error) {
+      // Log error but don't fail the entire fetch
+      console.error(`Failed to fetch component ${name}:`, error);
     }
   });
 
@@ -106,16 +130,21 @@ export async function fetchComponents(
 }
 
 /**
- * Fetch all available components
+ * Fetch all available components dynamically from GitHub
  */
-export async function fetchAllComponents(): Promise<Map<string, BaseUIComponent>> {
-  console.error(`Fetching ${COMPONENT_FILES.length} components from GitHub...`);
-  return fetchComponents(COMPONENT_FILES);
+export async function fetchAllComponents(): Promise<
+  Map<string, BaseUIComponent>
+> {
+  // Dynamically fetch the list of available components
+  const componentNames = await fetchAvailableComponentNames();
+
+  console.error(`Fetching ${componentNames.length} components from GitHub...`);
+  return fetchComponents(componentNames);
 }
 
 /**
- * Get the list of all available component names
+ * Get the list of all available component names (cached or fetched)
  */
-export function getAvailableComponentNames(): string[] {
-  return [...COMPONENT_FILES];
+export async function getAvailableComponentNames(): Promise<string[]> {
+  return fetchAvailableComponentNames();
 }

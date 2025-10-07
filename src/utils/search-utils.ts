@@ -1,132 +1,167 @@
-import { BaseUIComponent } from '../types.js';
-
-/**
- * Calculate similarity score between two strings (0-1)
- * Uses a simple case-insensitive substring matching algorithm
- */
-function calculateSimilarity(text: string, query: string): number {
-  const lowerText = text.toLowerCase();
-  const lowerQuery = query.toLowerCase();
-
-  // Exact match
-  if (lowerText === lowerQuery) {
-    return 1.0;
-  }
-
-  // Starts with query
-  if (lowerText.startsWith(lowerQuery)) {
-    return 0.9;
-  }
-
-  // Contains query as whole word
-  const words = lowerText.split(/\s+/);
-  if (words.some((word) => word === lowerQuery)) {
-    return 0.8;
-  }
-
-  // Contains query
-  if (lowerText.includes(lowerQuery)) {
-    return 0.7;
-  }
-
-  // Word starts with query
-  if (words.some((word) => word.startsWith(lowerQuery))) {
-    return 0.6;
-  }
-
-  // Fuzzy match: count matching characters in order
-  let matchCount = 0;
-  let textIndex = 0;
-  for (const char of lowerQuery) {
-    const foundIndex = lowerText.indexOf(char, textIndex);
-    if (foundIndex !== -1) {
-      matchCount += 1;
-      textIndex = foundIndex + 1;
-    }
-  }
-
-  const fuzzyScore = matchCount / lowerQuery.length;
-  return fuzzyScore * 0.5; // Weight fuzzy matches lower
-}
+import { BaseUIComponent } from "../types";
+import fuzzysort from "fuzzysort";
 
 export interface SearchResult {
   component: BaseUIComponent;
   score: number;
-  matches: {
-    name: number;
-    description: number;
-    props: number;
-    dataAttributes: number;
+}
+
+export interface PaginatedSearchResults {
+  items: BaseUIComponent[];
+  pagination: {
+    total: number;
+    offset: number;
+    limit: number;
+    hasMore: boolean;
   };
 }
 
 /**
- * Advanced search with relevance scoring
+ * Fuzzysort already returns scores in 0-1 range where 1 is best match
+ * This function just ensures the score is clamped to valid range
+ *
+ * @param fuzzysortScore - The score from fuzzysort (0 to 1, where 1 is perfect)
+ * @returns Score clamped to 0-1 range
+ */
+function normalizeScore(fuzzysortScore: number): number {
+  // Fuzzysort already returns 0-1 scores where 1 is perfect match
+  // Just clamp to ensure valid range
+  return Math.max(0, Math.min(1, fuzzysortScore));
+}
+
+/**
+ * Advanced search with fuzzysort for better fuzzy matching
+ * Now uses normalized scores (0-1) where higher = better match
  */
 export function searchWithScoring(
   components: Map<string, BaseUIComponent>,
   query: string,
   options: {
     limit?: number;
+    offset?: number;
     minScore?: number;
     includeProps?: boolean;
     includeDataAttributes?: boolean;
-  } = {},
+  } = {}
 ): SearchResult[] {
-  const { limit = 10, minScore = 0.3, includeProps = true, includeDataAttributes = true } = options;
+  const {
+    limit = 10,
+    offset = 0,
+    minScore = 0.7, // Now using normalized 0-1 scale (0.7 = 70% match)
+    includeProps = true,
+    includeDataAttributes = true,
+  } = options;
 
-  const results: SearchResult[] = [];
+  // Prepare search targets
+  const searchTargets = Array.from(components.values()).map((component) => {
+    const propNames = includeProps
+      ? Object.keys(component.props).join(" ")
+      : "";
+    const attrNames = includeDataAttributes
+      ? Object.keys(component.dataAttributes).join(" ")
+      : "";
 
-  for (const component of components.values()) {
-    const matches = {
-      name: calculateSimilarity(component.name, query),
-      description: component.description ? calculateSimilarity(component.description, query) : 0,
-      props: 0,
-      dataAttributes: 0,
+    return {
+      component,
+      name: component.name,
+      description: component.description || "",
+      searchableText: `${component.name} ${
+        component.description || ""
+      } ${propNames} ${attrNames}`.trim(),
     };
+  });
 
-    // Search in props if enabled
-    if (includeProps) {
-      const propNames = Object.keys(component.props);
-      const propDescriptions = Object.values(component.props)
-        .map((p) => p.description || '')
-        .join(' ');
+  // Perform fuzzy search with fuzzysort (use very permissive threshold)
+  const results = fuzzysort.go(query, searchTargets, {
+    keys: ["name", "description", "searchableText"],
+    threshold: 0, // Accept all matches - we'll filter with minScore
+    limit: searchTargets.length, // Get all results for pagination
+  });
 
-      matches.props = Math.max(
-        ...propNames.map((name) => calculateSimilarity(name, query)),
-        calculateSimilarity(propDescriptions, query),
-      );
-    }
+  // Transform, normalize, and filter results
+  const searchResults: SearchResult[] = results
+    .map((result) => ({
+      component: result.obj.component,
+      score: normalizeScore(result.score),
+    }))
+    .filter((result) => result.score >= minScore) // Filter by normalized score
+    .sort((a, b) => b.score - a.score); // Sort by score descending
 
-    // Search in data attributes if enabled
-    if (includeDataAttributes) {
-      const attrNames = Object.keys(component.dataAttributes);
-      const attrDescriptions = Object.values(component.dataAttributes)
-        .map((a) => a.description || '')
-        .join(' ');
+  // Apply pagination
+  return searchResults.slice(offset, offset + limit);
+}
 
-      matches.dataAttributes = Math.max(
-        ...attrNames.map((name) => calculateSimilarity(name, query)),
-        calculateSimilarity(attrDescriptions, query),
-      );
-    }
+/**
+ * Search components with pagination metadata
+ * Now uses normalized scores (0-1) where higher = better match
+ */
+export function searchWithPagination(
+  components: Map<string, BaseUIComponent>,
+  query: string,
+  options: {
+    limit?: number;
+    offset?: number;
+    minScore?: number;
+    includeProps?: boolean;
+    includeDataAttributes?: boolean;
+  } = {}
+): PaginatedSearchResults {
+  const {
+    limit = 10,
+    offset = 0,
+    minScore = 0.7, // Now using normalized 0-1 scale (0.7 = 70% match)
+    includeProps = true,
+    includeDataAttributes = true,
+  } = options;
 
-    // Calculate overall score (weighted)
-    const score =
-      matches.name * 0.5 + // Name is most important
-      matches.description * 0.3 + // Description is second
-      matches.props * 0.15 + // Props are helpful
-      matches.dataAttributes * 0.05; // Data attributes are least important
+  // Prepare search targets
+  const searchTargets = Array.from(components.values()).map((component) => {
+    const propNames = includeProps
+      ? Object.keys(component.props).join(" ")
+      : "";
+    const attrNames = includeDataAttributes
+      ? Object.keys(component.dataAttributes).join(" ")
+      : "";
 
-    if (score >= minScore) {
-      results.push({ component, score, matches });
-    }
-  }
+    return {
+      component,
+      name: component.name,
+      description: component.description || "",
+      searchableText: `${component.name} ${
+        component.description || ""
+      } ${propNames} ${attrNames}`.trim(),
+    };
+  });
 
-  // Sort by score (highest first)
-  results.sort((a, b) => b.score - a.score);
+  // Perform fuzzy search with fuzzysort (use very permissive threshold)
+  const results = fuzzysort.go(query, searchTargets, {
+    keys: ["name", "description", "searchableText"],
+    threshold: 0, // Accept all matches - we'll filter with minScore
+    limit: searchTargets.length,
+  });
 
-  return results.slice(0, limit);
+  // Transform, normalize, and filter results
+  const allComponents = results
+    .map((result) => ({
+      component: result.obj.component,
+      score: normalizeScore(result.score),
+    }))
+    .filter((result) => result.score >= minScore)
+    .sort((a, b) => b.score - a.score)
+    .map((result) => result.component);
+
+  const total = allComponents.length;
+  const paginatedItems = allComponents.slice(offset, offset + limit);
+
+  return {
+    items: paginatedItems,
+    pagination: {
+      total,
+      offset,
+      limit,
+      hasMore: offset + limit < total,
+    },
+  };
 }
 
 /**
@@ -135,11 +170,11 @@ export function searchWithScoring(
 export function filterComponents(
   components: Map<string, BaseUIComponent>,
   filters: {
-    hasProps?: string[]; // Must have these prop names
-    hasDataAttributes?: string[]; // Must have these data attributes
-    hasCssVariables?: boolean; // Must have CSS variables
-    minPropsCount?: number; // Minimum number of props
-  },
+    hasProps?: string[];
+    hasDataAttributes?: string[];
+    hasCssVariables?: boolean;
+    minPropsCount?: number;
+  }
 ): BaseUIComponent[] {
   const results: BaseUIComponent[] = [];
 
@@ -148,16 +183,26 @@ export function filterComponents(
 
     // Check required props
     if (filters.hasProps) {
-      const propNames = Object.keys(component.props).map((p) => p.toLowerCase());
-      matches = matches && filters.hasProps.every((prop) => propNames.includes(prop.toLowerCase()));
+      const propNames = Object.keys(component.props).map((p) =>
+        p.toLowerCase()
+      );
+      matches =
+        matches &&
+        filters.hasProps.every((prop) =>
+          propNames.includes(prop.toLowerCase())
+        );
     }
 
     // Check required data attributes
     if (filters.hasDataAttributes) {
-      const attrNames = Object.keys(component.dataAttributes).map((a) => a.toLowerCase());
+      const attrNames = Object.keys(component.dataAttributes).map((a) =>
+        a.toLowerCase()
+      );
       matches =
         matches &&
-        filters.hasDataAttributes.every((attr) => attrNames.includes(attr.toLowerCase()));
+        filters.hasDataAttributes.every((attr) =>
+          attrNames.includes(attr.toLowerCase())
+        );
     }
 
     // Check for CSS variables
@@ -168,7 +213,8 @@ export function filterComponents(
 
     // Check minimum props count
     if (filters.minPropsCount !== undefined) {
-      matches = matches && Object.keys(component.props).length >= filters.minPropsCount;
+      matches =
+        matches && Object.keys(component.props).length >= filters.minPropsCount;
     }
 
     if (matches) {
@@ -183,14 +229,14 @@ export function filterComponents(
  * Group components by pattern (e.g., "Dialog" groups DialogRoot, DialogTrigger, etc.)
  */
 export function groupComponentsByFamily(
-  components: Map<string, BaseUIComponent>,
+  components: Map<string, BaseUIComponent>
 ): Map<string, BaseUIComponent[]> {
   const families = new Map<string, BaseUIComponent[]>();
 
   for (const component of components.values()) {
     // Extract family name (e.g., "Dialog" from "DialogRoot")
     const match = component.name.match(/^([A-Z][a-z]+)/);
-    const familyName = match ? match[1] : 'Other';
+    const familyName = match ? match[1] : "Other";
 
     if (!families.has(familyName)) {
       families.set(familyName, []);
@@ -203,25 +249,19 @@ export function groupComponentsByFamily(
 }
 
 /**
- * Get component suggestions based on partial input
+ * Get component suggestions based on partial input using fuzzysort
  */
 export function getSuggestions(
   components: Map<string, BaseUIComponent>,
   partialInput: string,
-  limit: number = 5,
+  limit: number = 5
 ): string[] {
-  const lowerInput = partialInput.toLowerCase();
-  const suggestions: string[] = [];
+  const componentNames = Array.from(components.values()).map((c) => c.name);
 
-  for (const component of components.values()) {
-    if (component.name.toLowerCase().startsWith(lowerInput)) {
-      suggestions.push(component.name);
-    }
+  const results = fuzzysort.go(partialInput, componentNames, {
+    limit,
+    threshold: -10000,
+  });
 
-    if (suggestions.length >= limit) {
-      break;
-    }
-  }
-
-  return suggestions;
+  return results.map((result) => result.target);
 }
