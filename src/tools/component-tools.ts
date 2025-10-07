@@ -26,12 +26,12 @@ async function getAllComponents(): Promise<Map<string, BaseUIComponent>> {
 
   // Return cached data if still valid
   if (componentCache && cacheTimestamp && now - cacheTimestamp < CACHE_TTL) {
-    console.error('Using cached component data');
+    console.error("Using cached component data");
     return componentCache;
   }
 
   // Fetch fresh data
-  console.error('Fetching fresh component data from GitHub...');
+  console.error("Fetching fresh component data from GitHub...");
   componentCache = await fetchAllComponents();
   cacheTimestamp = now;
 
@@ -56,7 +56,7 @@ export async function searchComponents(
   const searchResults = searchWithScoring(components, query, {
     limit,
     offset: options?.offset || 0,
-    minScore: options?.minScore || -10000,
+    minScore: options?.minScore || 0.3,
     includeProps: options?.includeProps !== false,
     includeDataAttributes: options?.includeDataAttributes !== false,
   });
@@ -82,7 +82,7 @@ export async function searchComponentsWithPagination(
   return searchWithPagination(components, query, {
     limit,
     offset: options?.offset || 0,
-    minScore: options?.minScore || -10000,
+    minScore: options?.minScore || 0.3,
     includeProps: options?.includeProps !== false,
     includeDataAttributes: options?.includeDataAttributes !== false,
   });
@@ -91,7 +91,10 @@ export async function searchComponentsWithPagination(
 /**
  * Search components with detailed scoring information
  */
-export async function searchComponentsWithScores(query: string, limit: number = 10) {
+export async function searchComponentsWithScores(
+  query: string,
+  limit: number = 10
+) {
   const components = await getAllComponents();
 
   return searchWithScoring(components, query, { limit });
@@ -100,7 +103,9 @@ export async function searchComponentsWithScores(query: string, limit: number = 
 /**
  * Get a specific component by name
  */
-export async function getComponent(name: string): Promise<BaseUIComponent | null> {
+export async function getComponent(
+  name: string
+): Promise<BaseUIComponent | null> {
   // Try to get from cache first
   const components = await getAllComponents();
 
@@ -122,7 +127,9 @@ export async function getComponent(name: string): Promise<BaseUIComponent | null
 /**
  * List all available components
  */
-export async function listComponents(limit: number = 50): Promise<BaseUIComponent[]> {
+export async function listComponents(
+  limit: number = 50
+): Promise<BaseUIComponent[]> {
   const components = await getAllComponents();
   const allComponents = Array.from(components.values());
 
@@ -145,7 +152,9 @@ export async function filterComponentsByCriteria(filters: {
 /**
  * Get components grouped by family
  */
-export async function getComponentFamilies(): Promise<Map<string, BaseUIComponent[]>> {
+export async function getComponentFamilies(): Promise<
+  Map<string, BaseUIComponent[]>
+> {
   const components = await getAllComponents();
   return groupComponentsByFamily(components);
 }
@@ -155,7 +164,7 @@ export async function getComponentFamilies(): Promise<Map<string, BaseUIComponen
  */
 export async function getComponentSuggestions(
   partialInput: string,
-  limit: number = 5,
+  limit: number = 5
 ): Promise<string[]> {
   const components = await getAllComponents();
   return getSuggestions(components, partialInput, limit);

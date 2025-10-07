@@ -17,7 +17,21 @@ export interface PaginatedSearchResults {
 }
 
 /**
+ * Fuzzysort already returns scores in 0-1 range where 1 is best match
+ * This function just ensures the score is clamped to valid range
+ *
+ * @param fuzzysortScore - The score from fuzzysort (0 to 1, where 1 is perfect)
+ * @returns Score clamped to 0-1 range
+ */
+function normalizeScore(fuzzysortScore: number): number {
+  // Fuzzysort already returns 0-1 scores where 1 is perfect match
+  // Just clamp to ensure valid range
+  return Math.max(0, Math.min(1, fuzzysortScore));
+}
+
+/**
  * Advanced search with fuzzysort for better fuzzy matching
+ * Now uses normalized scores (0-1) where higher = better match
  */
 export function searchWithScoring(
   components: Map<string, BaseUIComponent>,
@@ -33,14 +47,16 @@ export function searchWithScoring(
   const {
     limit = 10,
     offset = 0,
-    minScore = -10000,
+    minScore = 0.3, // Now using normalized 0-1 scale (0.3 = 30% match)
     includeProps = true,
     includeDataAttributes = true,
   } = options;
 
   // Prepare search targets
   const searchTargets = Array.from(components.values()).map((component) => {
-    const propNames = includeProps ? Object.keys(component.props).join(" ") : "";
+    const propNames = includeProps
+      ? Object.keys(component.props).join(" ")
+      : "";
     const attrNames = includeDataAttributes
       ? Object.keys(component.dataAttributes).join(" ")
       : "";
@@ -49,24 +65,27 @@ export function searchWithScoring(
       component,
       name: component.name,
       description: component.description || "",
-      searchableText: `${component.name} ${component.description || ""} ${propNames} ${attrNames}`.trim(),
+      searchableText: `${component.name} ${
+        component.description || ""
+      } ${propNames} ${attrNames}`.trim(),
     };
   });
 
-  // Perform fuzzy search with fuzzysort
+  // Perform fuzzy search with fuzzysort (use very permissive threshold)
   const results = fuzzysort.go(query, searchTargets, {
     keys: ["name", "description", "searchableText"],
-    threshold: minScore,
+    threshold: 0, // Accept all matches - we'll filter with minScore
     limit: searchTargets.length, // Get all results for pagination
   });
 
-  // Transform results
-  const searchResults: SearchResult[] = results.map((result) => {
-    return {
+  // Transform, normalize, and filter results
+  const searchResults: SearchResult[] = results
+    .map((result) => ({
       component: result.obj.component,
-      score: result.score,
-    };
-  });
+      score: normalizeScore(result.score),
+    }))
+    .filter((result) => result.score >= minScore) // Filter by normalized score
+    .sort((a, b) => b.score - a.score); // Sort by score descending
 
   // Apply pagination
   return searchResults.slice(offset, offset + limit);
@@ -74,6 +93,7 @@ export function searchWithScoring(
 
 /**
  * Search components with pagination metadata
+ * Now uses normalized scores (0-1) where higher = better match
  */
 export function searchWithPagination(
   components: Map<string, BaseUIComponent>,
@@ -89,14 +109,16 @@ export function searchWithPagination(
   const {
     limit = 10,
     offset = 0,
-    minScore = -10000,
+    minScore = 0.3, // Now using normalized 0-1 scale (0.3 = 30% match)
     includeProps = true,
     includeDataAttributes = true,
   } = options;
 
   // Prepare search targets
   const searchTargets = Array.from(components.values()).map((component) => {
-    const propNames = includeProps ? Object.keys(component.props).join(" ") : "";
+    const propNames = includeProps
+      ? Object.keys(component.props).join(" ")
+      : "";
     const attrNames = includeDataAttributes
       ? Object.keys(component.dataAttributes).join(" ")
       : "";
@@ -105,18 +127,29 @@ export function searchWithPagination(
       component,
       name: component.name,
       description: component.description || "",
-      searchableText: `${component.name} ${component.description || ""} ${propNames} ${attrNames}`.trim(),
+      searchableText: `${component.name} ${
+        component.description || ""
+      } ${propNames} ${attrNames}`.trim(),
     };
   });
 
-  // Perform fuzzy search with fuzzysort
+  // Perform fuzzy search with fuzzysort (use very permissive threshold)
   const results = fuzzysort.go(query, searchTargets, {
     keys: ["name", "description", "searchableText"],
-    threshold: minScore,
+    threshold: 0, // Accept all matches - we'll filter with minScore
     limit: searchTargets.length,
   });
 
-  const allComponents = results.map((result) => result.obj.component);
+  // Transform, normalize, and filter results
+  const allComponents = results
+    .map((result) => ({
+      component: result.obj.component,
+      score: normalizeScore(result.score),
+    }))
+    .filter((result) => result.score >= minScore)
+    .sort((a, b) => b.score - a.score)
+    .map((result) => result.component);
+
   const total = allComponents.length;
   const paginatedItems = allComponents.slice(offset, offset + limit);
 
@@ -150,10 +183,14 @@ export function filterComponents(
 
     // Check required props
     if (filters.hasProps) {
-      const propNames = Object.keys(component.props).map((p) => p.toLowerCase());
+      const propNames = Object.keys(component.props).map((p) =>
+        p.toLowerCase()
+      );
       matches =
         matches &&
-        filters.hasProps.every((prop) => propNames.includes(prop.toLowerCase()));
+        filters.hasProps.every((prop) =>
+          propNames.includes(prop.toLowerCase())
+        );
     }
 
     // Check required data attributes
@@ -219,9 +256,7 @@ export function getSuggestions(
   partialInput: string,
   limit: number = 5
 ): string[] {
-  const componentNames = Array.from(components.values()).map(
-    (c) => c.name
-  );
+  const componentNames = Array.from(components.values()).map((c) => c.name);
 
   const results = fuzzysort.go(partialInput, componentNames, {
     limit,

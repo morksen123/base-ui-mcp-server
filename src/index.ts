@@ -59,7 +59,8 @@ async function main() {
           name: "search_components",
           description: dedent`
             Search Base UI components by name or description using fuzzy matching.
-            Returns components with relevance scores.
+            Returns components with relevance scores (0-1 scale where 1=perfect match).
+            Use minScore to control match quality: 0.3=lenient (default), 0.7=strict, 0.9=near-exact.
           `,
           inputSchema: zodToJsonSchema(SearchComponentsSchema),
         },
@@ -171,22 +172,33 @@ async function main() {
           }
 
           const { items, pagination } = searchResults;
-          
+
           let response = `# Search Results for "${parsedArgs.query}"\n\n`;
           response += `Found ${pagination.total} component(s) (showing ${items.length})\n\n`;
-          
+
           items.forEach((component) => {
             response += `## ${component.name}\n`;
             response += `${component.description || "No description"}\n`;
             response += `- Props: ${Object.keys(component.props).length}\n`;
-            response += `- Data Attributes: ${Object.keys(component.dataAttributes).length}\n`;
-            response += `- CSS Variables: ${Object.keys(component.cssVariables).length}\n\n`;
+            response += `- Data Attributes: ${
+              Object.keys(component.dataAttributes).length
+            }\n`;
+            response += `- CSS Variables: ${
+              Object.keys(component.cssVariables).length
+            }\n\n`;
           });
-          
+
           response += `---\n\n`;
-          response += `**Pagination:** Showing ${pagination.offset + 1}-${Math.min(pagination.offset + pagination.limit, pagination.total)} of ${pagination.total}\n`;
+          response += `**Pagination:** Showing ${
+            pagination.offset + 1
+          }-${Math.min(
+            pagination.offset + pagination.limit,
+            pagination.total
+          )} of ${pagination.total}\n`;
           if (pagination.hasMore) {
-            response += `\n💡 Use \`offset: ${pagination.offset + pagination.limit}\` to see more results.\n`;
+            response += `\n💡 Use \`offset: ${
+              pagination.offset + pagination.limit
+            }\` to see more results.\n`;
           }
 
           return {

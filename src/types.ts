@@ -52,9 +52,13 @@ export const SearchComponentsSchema = z.object({
     .describe("Number of items to skip for pagination"),
   minScore: z
     .number()
+    .min(0)
+    .max(1)
     .optional()
-    .default(-10000)
-    .describe("Minimum relevance score (fuzzysort threshold, lower = more permissive)"),
+    .default(0.3)
+    .describe(
+      "Minimum relevance score (0-1 scale where 1=perfect match, 0.3=30% match, higher=more restrictive)"
+    ),
   includeProps: z.boolean().optional().describe("Include props in search"),
   includeDataAttributes: z
     .boolean()
