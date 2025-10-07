@@ -1,8 +1,8 @@
 import {
   getComponentExamples,
   getSpecificDemo,
-} from "../fetchers/examples-fetcher.js";
-import { BaseUIError } from "../errors/registry-error.js";
+} from "@/fetchers/examples-fetcher";
+import { BaseUIError } from "@/errors/registry-error";
 
 /**
  * Get all examples for a component

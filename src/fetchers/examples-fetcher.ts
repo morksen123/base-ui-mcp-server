@@ -1,4 +1,4 @@
-import { BaseUIError } from "../errors/registry-error.js";
+import { BaseUIError } from "@/errors/registry-error";
 
 const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
 const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/mui/base-ui/master";

@@ -1,5 +1,5 @@
-import { BaseUIComponent } from "../types.js";
-import { getComponent } from "./component-tools.js";
+import { BaseUIComponent } from "@/types";
+import { getComponent } from "./component-tools";
 
 export interface InstallationGuide {
   packageName: string;

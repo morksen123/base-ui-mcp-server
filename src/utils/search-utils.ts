@@ -1,4 +1,4 @@
-import { BaseUIComponent } from "../types";
+import { BaseUIComponent } from "@/types";
 import fuzzysort from "fuzzysort";
 
 export interface SearchResult {

@@ -1,9 +1,9 @@
-import { BaseUIComponent } from "../types.js";
+import { BaseUIComponent } from "@/types";
 import {
   fetchComponent,
   fetchAllComponents,
   getAvailableComponentNames,
-} from "../fetchers/github-fetcher.js";
+} from "@/fetchers/github-fetcher";
 import {
   searchWithScoring,
   searchWithPagination,
@@ -11,31 +11,14 @@ import {
   groupComponentsByFamily,
   getSuggestions,
   PaginatedSearchResults,
-} from "../utils/search-utils.js";
-
-// In-memory cache for components
-let componentCache: Map<string, BaseUIComponent> | null = null;
-let cacheTimestamp: number | null = null;
-const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+} from "@/utils/search-utils";
 
 /**
- * Get all components (with caching)
+ * Get all components (caching handled by github-fetcher)
  */
 async function getAllComponents(): Promise<Map<string, BaseUIComponent>> {
-  const now = Date.now();
-
-  // Return cached data if still valid
-  if (componentCache && cacheTimestamp && now - cacheTimestamp < CACHE_TTL) {
-    console.error("Using cached component data");
-    return componentCache;
-  }
-
-  // Fetch fresh data
-  console.error("Fetching fresh component data from GitHub...");
-  componentCache = await fetchAllComponents();
-  cacheTimestamp = now;
-
-  return componentCache;
+  // Caching is handled at the fetch layer in github-fetcher.ts
+  return fetchAllComponents();
 }
 
 /**
@@ -175,18 +158,13 @@ export async function getComponentSuggestions(
  */
 export async function getComponentStats(): Promise<{
   total: number;
-  cached: boolean;
-  cacheAge: number | null;
   families: number;
 }> {
   const components = await getAllComponents();
   const families = groupComponentsByFamily(components);
-  const cacheAge = cacheTimestamp ? Date.now() - cacheTimestamp : null;
 
   return {
     total: components.size,
-    cached: componentCache !== null,
-    cacheAge,
     families: families.size,
   };
 }

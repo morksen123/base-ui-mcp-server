@@ -3,8 +3,9 @@ import {
   fetchAvailableComponentNames,
   fetchComponent,
   fetchAllComponents,
-} from "../src/fetchers/github-fetcher";
-import { FALLBACK_COMPONENT_NAMES } from "../src/constants/fallback-components";
+  clearResourceCache,
+} from "@/fetchers/github-fetcher";
+import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
 
 // Store original fetch
 const originalFetch = global.fetch;
@@ -33,7 +34,7 @@ describe("fetchAvailableComponentNames", () => {
       ],
     });
 
-    const names = await fetchAvailableComponentNames();
+    const names = await fetchAvailableComponentNames({ useCache: false });
 
     expect(names).toEqual(["accordion-root", "avatar-root", "dialog-root"]);
     expect(names).not.toContain("some-directory");
@@ -44,7 +45,7 @@ describe("fetchAvailableComponentNames", () => {
     // Mock API failure
     global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
 
-    const names = await fetchAvailableComponentNames();
+    const names = await fetchAvailableComponentNames({ useCache: false });
 
     // Should return fallback list
     expect(names.length).toBeGreaterThan(0);
@@ -63,7 +64,7 @@ describe("fetchAvailableComponentNames", () => {
       statusText: "Not Found",
     });
 
-    const names = await fetchAvailableComponentNames();
+    const names = await fetchAvailableComponentNames({ useCache: false });
 
     // Should return fallback list
     expect(names).toEqual([...FALLBACK_COMPONENT_NAMES]);
@@ -76,7 +77,7 @@ describe("fetchAvailableComponentNames", () => {
       json: async () => ({ error: "Invalid response" }),
     });
 
-    const names = await fetchAvailableComponentNames();
+    const names = await fetchAvailableComponentNames({ useCache: false });
 
     // Should return fallback list
     expect(names).toEqual([...FALLBACK_COMPONENT_NAMES]);
@@ -96,7 +97,7 @@ describe("fetchAvailableComponentNames", () => {
       ],
     });
 
-    await fetchAvailableComponentNames();
+    await fetchAvailableComponentNames({ useCache: false });
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("Found 2 components")
     );
@@ -106,7 +107,7 @@ describe("fetchAvailableComponentNames", () => {
     // Test failure case
     global.fetch = vi.fn().mockRejectedValue(new Error("API Error"));
 
-    await fetchAvailableComponentNames();
+    await fetchAvailableComponentNames({ useCache: false });
     expect(consoleErrorSpy).toHaveBeenCalled();
     const firstCall =
       consoleErrorSpy.mock.calls[consoleErrorSpy.mock.calls.length - 1];
@@ -135,7 +136,7 @@ describe("fetchComponent", () => {
       json: async () => mockComponentData,
     });
 
-    const component = await fetchComponent("avatar-root");
+    const component = await fetchComponent("avatar-root", { useCache: false });
 
     expect(component).not.toBeNull();
     expect(component?.name).toBe("AvatarRoot");
@@ -149,7 +150,9 @@ describe("fetchComponent", () => {
       statusText: "Not Found",
     });
 
-    const component = await fetchComponent("non-existent-component");
+    const component = await fetchComponent("non-existent-component", {
+      useCache: false,
+    });
 
     expect(component).toBeNull();
   });
@@ -161,7 +164,9 @@ describe("fetchComponent", () => {
       statusText: "Internal Server Error",
     });
 
-    await expect(fetchComponent("avatar-root")).rejects.toThrow();
+    await expect(
+      fetchComponent("avatar-root", { useCache: false })
+    ).rejects.toThrow();
   });
 
   it("should throw ValidationError for invalid component data", async () => {
@@ -174,7 +179,9 @@ describe("fetchComponent", () => {
       }),
     });
 
-    await expect(fetchComponent("avatar-root")).rejects.toThrow();
+    await expect(
+      fetchComponent("avatar-root", { useCache: false })
+    ).rejects.toThrow();
   });
 });
 
@@ -213,7 +220,7 @@ describe("fetchAllComponents", () => {
       }
     });
 
-    const components = await fetchAllComponents();
+    const components = await fetchAllComponents({ useCache: false });
 
     expect(components.size).toBeGreaterThan(0);
     // Should have fetched components dynamically
@@ -244,7 +251,7 @@ describe("fetchAllComponents", () => {
       }
     });
 
-    const components = await fetchAllComponents();
+    const components = await fetchAllComponents({ useCache: false });
 
     // Should have used fallback list
     expect(components.size).toBeGreaterThan(0);
@@ -288,7 +295,7 @@ describe("fetchAllComponents", () => {
       }
     });
 
-    const components = await fetchAllComponents();
+    const components = await fetchAllComponents({ useCache: false });
 
     // Should have some components (not all failed)
     expect(components.size).toBeGreaterThan(0);
@@ -316,5 +323,98 @@ describe("Fallback integration", () => {
     const uniqueList = [...new Set(fallbackList)];
 
     expect(fallbackList.length).toBe(uniqueList.length);
+  });
+});
+
+describe("Caching behavior", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearResourceCache(); // Clear cache before each test
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    clearResourceCache(); // Clean up after test
+  });
+
+  it("should cache component fetches by default", async () => {
+    const mockComponent = {
+      name: "TestComponent",
+      description: "Test",
+      props: {},
+      dataAttributes: {},
+      cssVariables: {},
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockComponent,
+    });
+
+    // First call - should hit network
+    await fetchComponent("test", { useCache: true });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // Second call - should use cache
+    await fetchComponent("test", { useCache: true });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("should bypass cache when useCache is false", async () => {
+    const mockComponent = {
+      name: "TestComponent",
+      description: "Test",
+      props: {},
+      dataAttributes: {},
+      cssVariables: {},
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockComponent,
+    });
+
+    // First call with cache
+    await fetchComponent("test", { useCache: true });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // Second call bypassing cache
+    await fetchComponent("test", { useCache: false });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("should dedupe concurrent requests", async () => {
+    const mockComponent = {
+      name: "TestComponent",
+      description: "Test",
+      props: {},
+      dataAttributes: {},
+      cssVariables: {},
+    };
+
+    // Simulate slow network
+    global.fetch = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: async () => mockComponent,
+              }),
+            50
+          );
+        })
+    );
+
+    // Make 3 concurrent requests
+    await Promise.all([
+      fetchComponent("test"),
+      fetchComponent("test"),
+      fetchComponent("test"),
+    ]);
+
+    // Should only fetch once (deduped by cache)
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 });

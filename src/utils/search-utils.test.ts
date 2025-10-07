@@ -1,9 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import {
-  searchWithScoring,
-  searchWithPagination,
-} from "../src/utils/search-utils.js";
-import { BaseUIComponent } from "../src/types.js";
+import { searchWithScoring, searchWithPagination } from "@/utils/search-utils";
+import { BaseUIComponent } from "@/types";
 
 // Mock component data for testing
 const createMockComponent = (

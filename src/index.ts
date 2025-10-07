@@ -16,13 +16,13 @@ import {
   searchComponentsWithPagination,
   getComponent,
   listComponents,
-} from "./tools/component-tools.js";
-import { getExamples, getDemo } from "./tools/examples-tools.js";
+} from "@/tools/component-tools";
+import { getExamples, getDemo } from "@/tools/examples-tools";
 import {
   getInstallationGuide,
   getSetupChecklist,
   getComponentDependencies,
-} from "./tools/installation-tools.js";
+} from "@/tools/installation-tools";
 
 // Import schemas and errors
 import {
@@ -34,8 +34,8 @@ import {
   GetInstallationGuideSchema,
   GetComponentDependenciesSchema,
   GetSetupChecklistSchema,
-} from "./types.js";
-import { BaseUIError } from "./errors/registry-error.js";
+} from "@/types";
+import { BaseUIError } from "@/errors/registry-error";
 
 async function main() {
   const server = new Server(
