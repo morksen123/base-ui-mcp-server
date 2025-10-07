@@ -32,11 +32,9 @@ describe("getComponent", () => {
       const mockComponent: BaseUIComponent = {
         name: "Input",
         description: "A text input field",
-        demos: [],
-        filename: "input.json",
         props: {
           value: {
-            type: { name: "string" },
+            type: "string",
             description: "The value of the input",
             required: false,
           },
@@ -67,8 +65,6 @@ describe("getComponent", () => {
       const mockComponent: BaseUIComponent = {
         name: "Input",
         description: "Input field",
-        demos: [],
-        filename: "input.json",
         props: {},
         dataAttributes: {},
         cssVariables: {},
@@ -89,8 +85,6 @@ describe("getComponent", () => {
       const mockComponent: BaseUIComponent = {
         name: "DialogRoot",
         description: "Dialog root",
-        demos: [],
-        filename: "dialog-root.json",
         props: {},
         dataAttributes: {},
         cssVariables: {},
@@ -112,18 +106,16 @@ describe("getComponent", () => {
       const mockComponent: BaseUIComponent = {
         name: "AvatarRoot",
         description: "Avatar component",
-        demos: [],
-        filename: "avatar-root.json",
         props: {
           src: {
-            type: { name: "string" },
+            type: "string",
             description: "Image URL",
             required: false,
           },
         },
         dataAttributes: {
           "data-state": {
-            type: { name: "string" },
+            type: "string",
             description: "State",
           },
         },
@@ -145,24 +137,20 @@ describe("getComponent", () => {
       expect(result).toHaveProperty("props");
       expect(result).toHaveProperty("dataAttributes");
       expect(result).toHaveProperty("cssVariables");
-      expect(result).toHaveProperty("demos");
-      expect(result).toHaveProperty("filename");
     });
 
     it("should handle components with props", async () => {
       const mockComponent: BaseUIComponent = {
         name: "Button",
         description: "Button",
-        demos: [],
-        filename: "button.json",
         props: {
           disabled: {
-            type: { name: "boolean" },
+            type: "boolean",
             description: "Disabled",
             required: false,
           },
           onClick: {
-            type: { name: "function" },
+            type: "function",
             description: "Click handler",
             required: false,
           },
@@ -207,8 +195,6 @@ describe("getComponent", () => {
       const mockComponent: BaseUIComponent = {
         name: "NewComponent",
         description: "New",
-        demos: [],
-        filename: "new.json",
         props: {},
         dataAttributes: {},
         cssVariables: {},
@@ -233,8 +219,6 @@ describe("getComponent", () => {
           {
             name: "DialogRoot",
             description: "Dialog root",
-            demos: [],
-            filename: "dialog-root.json",
             props: {},
             dataAttributes: {},
             cssVariables: {},
@@ -245,8 +229,6 @@ describe("getComponent", () => {
           {
             name: "DialogTrigger",
             description: "Dialog trigger",
-            demos: [],
-            filename: "dialog-trigger.json",
             props: {},
             dataAttributes: {},
             cssVariables: {},
