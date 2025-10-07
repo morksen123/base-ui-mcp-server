@@ -73,7 +73,59 @@ export const FilterComponentsSchema = z.object({
   minPropsCount: z.number().int().positive().optional().describe('Minimum number of props'),
 });
 
+// New schemas for examples tools
+export const GetComponentExamplesSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Component name must not be empty')
+    .describe('Component name to get examples for'),
+  variant: z
+    .enum(['css-modules', 'tailwind'])
+    .optional()
+    .describe('Styling variant to filter examples (css-modules or tailwind)'),
+});
+
+export const GetSpecificDemoSchema = z.object({
+  componentName: z
+    .string()
+    .min(1, 'Component name must not be empty')
+    .describe('Component name'),
+  demoName: z
+    .string()
+    .min(1, 'Demo name must not be empty')
+    .describe('Name of the specific demo to retrieve'),
+  variant: z
+    .enum(['css-modules', 'tailwind'])
+    .optional()
+    .default('css-modules')
+    .describe('Styling variant (css-modules or tailwind)'),
+});
+
+// New schemas for installation tools
+export const GetInstallationGuideSchema = z.object({
+  componentNames: z
+    .array(z.string())
+    .min(1, 'At least one component name is required')
+    .describe('Array of component names to get installation guide for'),
+});
+
+export const GetComponentDependenciesSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Component name must not be empty')
+    .describe('Component name to get dependencies for'),
+});
+
+export const GetSetupChecklistSchema = z.object({
+  // No parameters needed for this tool
+});
+
 export type SearchComponentsParams = z.infer<typeof SearchComponentsSchema>;
 export type GetComponentParams = z.infer<typeof GetComponentSchema>;
 export type ListComponentsParams = z.infer<typeof ListComponentsSchema>;
 export type FilterComponentsParams = z.infer<typeof FilterComponentsSchema>;
+export type GetComponentExamplesParams = z.infer<typeof GetComponentExamplesSchema>;
+export type GetSpecificDemoParams = z.infer<typeof GetSpecificDemoSchema>;
+export type GetInstallationGuideParams = z.infer<typeof GetInstallationGuideSchema>;
+export type GetComponentDependenciesParams = z.infer<typeof GetComponentDependenciesSchema>;
+export type GetSetupChecklistParams = z.infer<typeof GetSetupChecklistSchema>;

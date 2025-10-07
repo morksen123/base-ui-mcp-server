@@ -9,9 +9,24 @@ import dedent from 'dedent';
 
 // Import our tools
 import { searchComponents, getComponent, listComponents } from './tools/component-tools.js';
+import { getExamples, getDemo } from './tools/examples-tools.js';
+import {
+  getInstallationGuide,
+  getSetupChecklist,
+  getComponentDependencies,
+} from './tools/installation-tools.js';
 
 // Import schemas and errors
-import { SearchComponentsSchema, GetComponentSchema, ListComponentsSchema } from './types.js';
+import {
+  SearchComponentsSchema,
+  GetComponentSchema,
+  ListComponentsSchema,
+  GetComponentExamplesSchema,
+  GetSpecificDemoSchema,
+  GetInstallationGuideSchema,
+  GetComponentDependenciesSchema,
+  GetSetupChecklistSchema,
+} from './types.js';
 import { BaseUIError } from './errors/registry-error.js';
 
 async function main() {
@@ -55,6 +70,47 @@ async function main() {
             Use this to browse all components in the library.
           `,
           inputSchema: zodToJsonSchema(ListComponentsSchema),
+        },
+        {
+          name: 'get_component_examples',
+          description: dedent`
+            ⭐ MOST IMPORTANT: Get full, copy-pasteable code examples and demos for a component.
+            Returns working demo code (both CSS Modules and Tailwind variants), anatomy,
+            and inline examples from documentation. This is what users need to actually USE the component.
+          `,
+          inputSchema: zodToJsonSchema(GetComponentExamplesSchema),
+        },
+        {
+          name: 'get_specific_demo',
+          description: dedent`
+            Get a specific demo by name for a component. Useful when you know which demo you want.
+            Returns the full code for that specific demo.
+          `,
+          inputSchema: zodToJsonSchema(GetSpecificDemoSchema),
+        },
+        {
+          name: 'get_installation_guide',
+          description: dedent`
+            Get installation commands, required imports, peer dependencies, and basic usage
+            for one or more components. Includes npm/yarn/pnpm commands and setup instructions.
+          `,
+          inputSchema: zodToJsonSchema(GetInstallationGuideSchema),
+        },
+        {
+          name: 'get_component_dependencies',
+          description: dedent`
+            Get detailed dependency information for a component including peer dependencies,
+            related components in the same family, required vs optional parts, and component structure.
+          `,
+          inputSchema: zodToJsonSchema(GetComponentDependenciesSchema),
+        },
+        {
+          name: 'get_setup_checklist',
+          description: dedent`
+            Get a comprehensive setup checklist for Base UI including installation verification,
+            React version checks, TypeScript configuration, CSS setup, and common troubleshooting.
+          `,
+          inputSchema: zodToJsonSchema(GetSetupChecklistSchema),
         },
       ],
     };
@@ -188,6 +244,205 @@ async function main() {
                     )
                     .join('\n\n')}
                 `,
+              },
+            ],
+          };
+        }
+
+        case 'get_component_examples': {
+          const parsedArgs = GetComponentExamplesSchema.parse(args);
+          const examples = await getExamples(parsedArgs.name, parsedArgs.variant);
+
+          if (examples.demos.length === 0 && examples.inlineExamples.length === 0) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: dedent`
+                    No examples found for component "${parsedArgs.name}".
+
+                    💡 Try:
+                    - Checking the component name spelling
+                    - Using search_components to find the correct name
+                    - Some components may not have dedicated demos yet
+                  `,
+                },
+              ],
+            };
+          }
+
+          // Format the response with all examples
+          let response = `# Examples for ${examples.componentName}\n\n`;
+
+          if (examples.anatomy) {
+            response += `## Anatomy\n\n\`\`\`jsx\n${examples.anatomy}\n\`\`\`\n\n`;
+          }
+
+          if (examples.demos.length > 0) {
+            response += `## Interactive Demos (${examples.demos.length})\n\n`;
+            examples.demos.forEach((demo) => {
+              response += `### ${demo.description} (${demo.variant})\n\n`;
+              response += `\`\`\`tsx\n${demo.code}\n\`\`\`\n\n`;
+              if (demo.cssCode) {
+                response += `**CSS:**\n\`\`\`css\n${demo.cssCode}\n\`\`\`\n\n`;
+              }
+            });
+          }
+
+          if (examples.inlineExamples.length > 0) {
+            response += `## Additional Examples (${examples.inlineExamples.length})\n\n`;
+            examples.inlineExamples.forEach((example) => {
+              response += `### ${example.title}\n\n`;
+              response += `\`\`\`tsx\n${example.code}\n\`\`\`\n\n`;
+            });
+          }
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: response,
+              },
+            ],
+          };
+        }
+
+        case 'get_specific_demo': {
+          const parsedArgs = GetSpecificDemoSchema.parse(args);
+          const demo = await getDemo(
+            parsedArgs.componentName,
+            parsedArgs.demoName,
+            parsedArgs.variant,
+          );
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: dedent`
+                  # ${demo.description} (${demo.variant})
+
+                  \`\`\`${demo.language}
+                  ${demo.code}
+                  \`\`\`
+
+                  ${demo.cssCode ? `## CSS\n\n\`\`\`css\n${demo.cssCode}\n\`\`\`` : ''}
+                `,
+              },
+            ],
+          };
+        }
+
+        case 'get_installation_guide': {
+          const parsedArgs = GetInstallationGuideSchema.parse(args);
+          const guide = await getInstallationGuide(parsedArgs.componentNames);
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: dedent`
+                  # Installation Guide
+
+                  ## Install ${guide.packageName}
+
+                  **npm:**
+                  \`\`\`bash
+                  ${guide.installCommand.npm}
+                  \`\`\`
+
+                  **yarn:**
+                  \`\`\`bash
+                  ${guide.installCommand.yarn}
+                  \`\`\`
+
+                  **pnpm:**
+                  \`\`\`bash
+                  ${guide.installCommand.pnpm}
+                  \`\`\`
+
+                  ## Peer Dependencies
+
+                  - React: ${guide.peerDependencies.react}
+                  - React DOM: ${guide.peerDependencies.reactDom}
+
+                  ## Import
+
+                  ${guide.imports.join('\n')}
+
+                  ## Basic Usage
+
+                  \`\`\`jsx
+                  ${guide.basicUsage}
+                  \`\`\`
+
+                  ${guide.relatedComponents && guide.relatedComponents.length > 0 ? `## Related Components\n\n${guide.relatedComponents.join(', ')}` : ''}
+
+                  ## Styling
+
+                  ${guide.cssSetup}
+                `,
+              },
+            ],
+          };
+        }
+
+        case 'get_component_dependencies': {
+          const parsedArgs = GetComponentDependenciesSchema.parse(args);
+          const deps = await getComponentDependencies(parsedArgs.name);
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: dedent`
+                  # Dependencies for ${deps.component}
+
+                  ## Component Family
+                  ${deps.componentFamily}
+
+                  ## Peer Dependencies
+                  ${JSON.stringify(deps.peerDependencies, null, 2)}
+
+                  ## Related Components
+                  ${deps.relatedComponents.join(', ')}
+
+                  ## Required Parts
+                  ${deps.requiredParts.join(', ')}
+
+                  ## Optional Parts
+                  ${deps.optionalParts.join(', ')}
+                `,
+              },
+            ],
+          };
+        }
+
+        case 'get_setup_checklist': {
+          GetSetupChecklistSchema.parse(args);
+          const checklist = await getSetupChecklist();
+
+          let response = '# Base UI Setup Checklist\n\n';
+          
+          checklist.items.forEach((item, index) => {
+            response += `## ${index + 1}. ${item.title} ${item.required ? '(Required)' : '(Optional)'}\n\n`;
+            response += `${item.description}\n\n`;
+            if (item.checkCommand) {
+              response += `**Verify:** \`${item.checkCommand}\`\n\n`;
+            }
+          });
+
+          response += '## Troubleshooting\n\n';
+          checklist.troubleshooting.forEach((item) => {
+            response += `**Issue:** ${item.issue}\n\n`;
+            response += `**Solution:** ${item.solution}\n\n`;
+          });
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: response,
               },
             ],
           };
