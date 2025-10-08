@@ -51,38 +51,51 @@ async function main() {
         {
           name: "search_components",
           description: dedent`
-            Search Base UI components by name or description using fuzzy matching.
-            Returns components with relevance scores (0-1 scale where 1=perfect match).
-            Use minScore to control match quality: 0.3=lenient, 0.7=strict (default), 0.9=near-exact.
-            
-            After finding a component, use get_component_examples to see full usage examples with code.
+            Find components using fuzzy matching on names, descriptions, and props.
+
+            Example: { "query": "dialog" }
+            Advanced: { "query": "form", "limit": 5, "minScore": 0.7 }
+
+            Returns: Component names, descriptions, and API counts.
+            Tip: Use results with get_component_examples to see full usage.
           `,
           inputSchema: zodToJsonSchema(SearchComponentsSchema),
         },
         {
           name: "get_component_examples",
           description: dedent`
-            ⭐ MOST IMPORTANT: Get full, copy-pasteable code examples and demos for a component.
-            Returns working demo code (both CSS Modules and Tailwind variants), component anatomy,
-            inline examples, AND component metadata (props, data attributes, CSS variables).
-            This is the complete resource for using a component.
+            ⭐ Get complete working code + full API reference in one call.
+
+            Example: { "name": "DialogRoot" }
+            With variant: { "name": "AccordionRoot", "variant": "css-modules" }
+
+            Returns: Demos (TSX+CSS), anatomy, props, data attributes, CSS variables.
+            Tip: Use exact component names (e.g., DialogRoot, not Dialog).
           `,
           inputSchema: zodToJsonSchema(GetComponentExamplesSchema),
         },
         {
           name: "get_installation_guide",
           description: dedent`
-            Get installation commands, required imports, peer dependencies, related components,
-            and basic usage for one or more components. Includes npm/yarn/pnpm commands and setup instructions.
+            Get install commands, imports, and setup instructions.
+
+            Example: { "componentNames": ["DialogRoot"] }
+            Multiple: { "componentNames": ["DialogRoot", "DialogTrigger", "DialogPopup"] }
+
+            Returns: npm/yarn/pnpm commands, imports, React requirements, basic usage.
+            Tip: Use exact names. For compound components, list all parts you need.
           `,
           inputSchema: zodToJsonSchema(GetInstallationGuideSchema),
         },
         {
           name: "get_setup_checklist",
           description: dedent`
-            Get a comprehensive setup checklist for Base UI including installation verification,
-            React version checks, TypeScript configuration, CSS setup, and common troubleshooting.
-            Use this after adding components to verify everything is working correctly.
+            Verify your Base UI setup and troubleshoot issues.
+
+            Example: {}
+
+            Returns: Installation verification, React version check, TypeScript config, CSS setup, troubleshooting.
+            Use after adding components to verify everything works.
           `,
           inputSchema: zodToJsonSchema(GetSetupChecklistSchema),
         },
@@ -209,11 +222,22 @@ async function main() {
 
           // Add component metadata if available
           if (examples.component) {
-            response += `${examples.component.description || "No description available."}\n\n`;
-            response += `**Renders:** ${examples.component.renders || "Doesn't render its own HTML element"}\n\n`;
-            response += `- **Props:** ${Object.keys(examples.component.props).length}\n`;
-            response += `- **Data Attributes:** ${Object.keys(examples.component.dataAttributes).length}\n`;
-            response += `- **CSS Variables:** ${Object.keys(examples.component.cssVariables).length}\n\n`;
+            response += `${
+              examples.component.description || "No description available."
+            }\n\n`;
+            response += `**Renders:** ${
+              examples.component.renders ||
+              "Doesn't render its own HTML element"
+            }\n\n`;
+            response += `- **Props:** ${
+              Object.keys(examples.component.props).length
+            }\n`;
+            response += `- **Data Attributes:** ${
+              Object.keys(examples.component.dataAttributes).length
+            }\n`;
+            response += `- **CSS Variables:** ${
+              Object.keys(examples.component.cssVariables).length
+            }\n\n`;
             response += `---\n\n`;
           }
 
@@ -243,20 +267,38 @@ async function main() {
           // Add detailed component API if available
           if (examples.component) {
             response += `---\n\n## Component API\n\n`;
-            
+
             if (Object.keys(examples.component.props).length > 0) {
-              response += `### Props (${Object.keys(examples.component.props).length})\n\n`;
-              response += `\`\`\`json\n${JSON.stringify(examples.component.props, null, 2)}\n\`\`\`\n\n`;
+              response += `### Props (${
+                Object.keys(examples.component.props).length
+              })\n\n`;
+              response += `\`\`\`json\n${JSON.stringify(
+                examples.component.props,
+                null,
+                2
+              )}\n\`\`\`\n\n`;
             }
 
             if (Object.keys(examples.component.dataAttributes).length > 0) {
-              response += `### Data Attributes (${Object.keys(examples.component.dataAttributes).length})\n\n`;
-              response += `\`\`\`json\n${JSON.stringify(examples.component.dataAttributes, null, 2)}\n\`\`\`\n\n`;
+              response += `### Data Attributes (${
+                Object.keys(examples.component.dataAttributes).length
+              })\n\n`;
+              response += `\`\`\`json\n${JSON.stringify(
+                examples.component.dataAttributes,
+                null,
+                2
+              )}\n\`\`\`\n\n`;
             }
 
             if (Object.keys(examples.component.cssVariables).length > 0) {
-              response += `### CSS Variables (${Object.keys(examples.component.cssVariables).length})\n\n`;
-              response += `\`\`\`json\n${JSON.stringify(examples.component.cssVariables, null, 2)}\n\`\`\`\n\n`;
+              response += `### CSS Variables (${
+                Object.keys(examples.component.cssVariables).length
+              })\n\n`;
+              response += `\`\`\`json\n${JSON.stringify(
+                examples.component.cssVariables,
+                null,
+                2
+              )}\n\`\`\`\n\n`;
             }
           }
 
