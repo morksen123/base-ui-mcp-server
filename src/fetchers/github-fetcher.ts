@@ -53,9 +53,13 @@ export async function fetchAvailableComponentNames(options?: {
       const data = await response.json();
 
       // Filter for JSON files and extract names without extension
+      // Exclude hooks (files starting with "use-") as they have a different structure
       const componentNames = data
         .filter(
-          (item: any) => item.type === "file" && item.name.endsWith(".json")
+          (item: any) =>
+            item.type === "file" &&
+            item.name.endsWith(".json") &&
+            !item.name.startsWith("use-")
         )
         .map((item: any) => item.name.replace(".json", ""));
 

@@ -8,16 +8,21 @@ An MCP (Model Context Protocol) server that provides AI assistants with direct a
 
 ## 🎯 Overview
 
-This MCP server enables AI assistants to seamlessly interact with the [Base UI](https://base-ui.com/react/overview/quick-start) component library. It provides:
+This MCP server enables AI assistants to seamlessly interact with the [Base UI](https://base-ui.com/react/overview/quick-start) component library with **action-oriented tools** following the [shadcn MCP pattern](https://ui.shadcn.com/docs/mcp).
 
-- 🔍 **Intelligent Search** - Fuzzy matching with relevance scoring
-- 📚 **Component Details** - Props, data attributes, CSS variables
-- 🎨 **Component Families** - Grouped by functionality (Dialog, Menu, etc.)
-- ⚡ **Performance** - In-memory caching with 1-hour TTL
+**4 Essential Tools:**
+
+- 🔍 **search_components** - Find components by fuzzy matching
+- 📦 **get_component_examples** - Get full code examples + component API
+- 💿 **get_installation_guide** - Get install commands + imports + setup
+- ✅ **get_setup_checklist** - Verify installation and troubleshoot
+
+**Key Features:**
+
+- ⚡ **Performance** - In-memory promise-based caching
 - 🛡️ **Type Safety** - Full Zod validation and TypeScript support
 - 💬 **Helpful Errors** - Clear messages with actionable suggestions
-
-Following the [shadcn MCP pattern](https://ui.shadcn.com/docs/mcp), this server fetches real-time data from the Base UI GitHub repository.
+- 🎯 **Action-Oriented** - Every tool provides immediately actionable results
 
 ## ✨ Features
 
@@ -102,92 +107,145 @@ Configure your AI assistant to use the MCP server by adding it to your MCP confi
 
 ## 📖 Available Tools
 
-### `search_components`
+### 1. `search_components` 🔍
 
-Search Base UI components by name or description using fuzzy matching.
+Find components using fuzzy matching on names, descriptions, and props.
 
-**Parameters:**
+**Use when:** "I need a component for modals" or "What components handle forms?"
 
-- `query` (string, required): Search query
-- `limit` (number, optional): Maximum results (default: 10, max: 100)
-- `minScore` (number, optional): Minimum relevance score 0-1 (default: 0.7)
-- `includeProps` (boolean, optional): Include props in search (default: true)
-- `includeDataAttributes` (boolean, optional): Include data attributes in search (default: true)
-
-**Example:**
+**Quick start:**
 
 ```json
 {
-  "name": "search_components",
-  "arguments": {
-    "query": "dialog",
-    "limit": 5
-  }
+  "query": "dialog"
 }
 ```
 
-**Response:**
+**With options:**
 
 ```json
 {
-  "query": "dialog",
-  "resultsCount": 5,
-  "components": [
-    {
-      "name": "DialogRoot",
-      "description": "The root container for a dialog...",
-      "propsCount": 8,
-      "dataAttributesCount": 3
-    }
-  ]
+  "query": "form input",
+  "limit": 5
 }
 ```
 
-### `get_component`
+<details>
+<summary>All parameters</summary>
 
-Get detailed information about a specific Base UI component.
+- `query` (string, required): Search term
+- `limit` (number): Max results (default: 10, max: 100)
+- `offset` (number): Skip N items for pagination
+- `minScore` (number): Match threshold 0-1 (default: 0.7)
 
-**Parameters:**
+</details>
 
-- `name` (string, required): Exact component name (e.g., "Input", "DialogRoot")
+**Returns:** Component names, descriptions, and API counts (props/attributes).
 
-**Example:**
+---
+
+### 2. `get_component_examples` 📦 ⭐ MOST IMPORTANT
+
+Get complete working code + full API reference in one call.
+
+**Use when:** "Show me how to use Dialog" or "I need Dialog's full API"
+
+**Quick start:**
 
 ```json
 {
-  "name": "get_component",
-  "arguments": {
-    "name": "Input"
-  }
+  "name": "DialogRoot"
 }
 ```
 
-**Response:**
-Returns complete component information including:
-
-- Component description
-- All props with types, descriptions, and defaults
-- Data attributes
-- CSS variables
-
-### `list_components`
-
-List all available Base UI components with pagination.
-
-**Parameters:**
-
-- `limit` (number, optional): Maximum results (default: 50, max: 100)
-
-**Example:**
+**With styling preference:**
 
 ```json
 {
-  "name": "list_components",
-  "arguments": {
-    "limit": 20
-  }
+  "name": "AccordionRoot",
+  "variant": "css-modules"
 }
 ```
+
+<details>
+<summary>All parameters</summary>
+
+- `name` (string, required): Exact component name (e.g., "DialogRoot", "Input")
+- `variant` (enum): Filter demos: `"css-modules"` or `"tailwind"`
+
+</details>
+
+**Returns:**
+
+- Component description & what it renders
+- Anatomy (how parts fit together)
+- Full demo code (TSX + CSS) - copy-paste ready
+- All props, data attributes, CSS variables with types
+
+**💡 Tip:** Use exact names from search results (e.g., `DialogRoot` not `Dialog`).
+
+---
+
+### 3. `get_installation_guide` 💿
+
+Get install commands, imports, and setup instructions.
+
+**Use when:** "How do I install Dialog?" or "What imports do I need?"
+
+**Single component:**
+
+```json
+{
+  "componentNames": ["DialogRoot"]
+}
+```
+
+**Multiple components:**
+
+```json
+{
+  "componentNames": ["DialogRoot", "DialogTrigger", "DialogPopup"]
+}
+```
+
+<details>
+<summary>All parameters</summary>
+
+- `componentNames` (string[], required): Array of exact component names
+
+</details>
+
+**Returns:**
+
+- `npm install` commands (+ yarn/pnpm)
+- React version requirements
+- Import statements
+- Basic usage example
+- Related components in the family
+
+**💡 Tip:** Use exact names (e.g., `DialogRoot`, not `Dialog`). For compound components, list all parts you need.
+
+---
+
+### 4. `get_setup_checklist` ✅
+
+Verify your Base UI setup and troubleshoot issues.
+
+**Use when:** "Components aren't working" or "Is my setup correct?"
+
+**Usage:**
+
+```json
+{}
+```
+
+**Returns:**
+
+- Installation verification
+- React version check
+- TypeScript config guide
+- CSS setup instructions
+- Common issues & solutions
 
 ## 🏗️ Architecture
 

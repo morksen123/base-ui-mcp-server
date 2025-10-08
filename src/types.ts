@@ -4,6 +4,7 @@ import { z } from "zod";
 export const BaseUIComponentSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
+  renders: z.string().nullable().optional(),
   props: z.record(
     z.object({
       type: z.string().optional(),
@@ -66,43 +67,7 @@ export const SearchComponentsSchema = z.object({
     .describe("Include data attributes in search"),
 });
 
-export const GetComponentSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Component name must not be empty")
-    .describe("Exact component name to retrieve"),
-});
-
-export const ListComponentsSchema = z.object({
-  limit: z
-    .number()
-    .int()
-    .positive()
-    .max(100, "Limit cannot exceed 100")
-    .optional()
-    .default(50)
-    .describe("Maximum number of results to return"),
-});
-
-export const FilterComponentsSchema = z.object({
-  hasProps: z
-    .array(z.string())
-    .optional()
-    .describe("Must have these prop names"),
-  hasDataAttributes: z
-    .array(z.string())
-    .optional()
-    .describe("Must have these data attributes"),
-  hasCssVariables: z.boolean().optional().describe("Must have CSS variables"),
-  minPropsCount: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .describe("Minimum number of props"),
-});
-
-// New schemas for examples tools
+// Schemas for MCP tools
 export const GetComponentExamplesSchema = z.object({
   name: z
     .string()
@@ -114,23 +79,7 @@ export const GetComponentExamplesSchema = z.object({
     .describe("Styling variant to filter examples (css-modules or tailwind)"),
 });
 
-export const GetSpecificDemoSchema = z.object({
-  componentName: z
-    .string()
-    .min(1, "Component name must not be empty")
-    .describe("Component name"),
-  demoName: z
-    .string()
-    .min(1, "Demo name must not be empty")
-    .describe("Name of the specific demo to retrieve"),
-  variant: z
-    .enum(["css-modules", "tailwind"])
-    .optional()
-    .default("css-modules")
-    .describe("Styling variant (css-modules or tailwind)"),
-});
-
-// New schemas for installation tools
+// Schemas for installation tools
 export const GetInstallationGuideSchema = z.object({
   componentNames: z
     .array(z.string())
@@ -138,29 +87,16 @@ export const GetInstallationGuideSchema = z.object({
     .describe("Array of component names to get installation guide for"),
 });
 
-export const GetComponentDependenciesSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Component name must not be empty")
-    .describe("Component name to get dependencies for"),
-});
-
 export const GetSetupChecklistSchema = z.object({
   // No parameters needed for this tool
 });
 
+// Type exports
 export type SearchComponentsParams = z.infer<typeof SearchComponentsSchema>;
-export type GetComponentParams = z.infer<typeof GetComponentSchema>;
-export type ListComponentsParams = z.infer<typeof ListComponentsSchema>;
-export type FilterComponentsParams = z.infer<typeof FilterComponentsSchema>;
 export type GetComponentExamplesParams = z.infer<
   typeof GetComponentExamplesSchema
 >;
-export type GetSpecificDemoParams = z.infer<typeof GetSpecificDemoSchema>;
 export type GetInstallationGuideParams = z.infer<
   typeof GetInstallationGuideSchema
->;
-export type GetComponentDependenciesParams = z.infer<
-  typeof GetComponentDependenciesSchema
 >;
 export type GetSetupChecklistParams = z.infer<typeof GetSetupChecklistSchema>;
