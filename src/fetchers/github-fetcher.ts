@@ -70,7 +70,7 @@ export async function fetchComponent(
 ): Promise<BaseUIComponent | null> {
   const useCache = options?.useCache ?? true;
   const config = getConfig();
-  const url = `${config.github.rawBase}/${componentName}.json`;
+  const url = `${config.github.rawBase}/${config.github.referencePath}/${componentName}.json`;
 
   if (useCache && resourceCache.has(url)) {
     return resourceCache.get(url)!;

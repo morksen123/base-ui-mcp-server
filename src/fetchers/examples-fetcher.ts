@@ -1,6 +1,4 @@
-const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
-const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/mui/base-ui/master";
-const DOCS_PATH = "docs/src/app/(public)/(content)/react/components";
+import { getConfig } from "@/config";
 
 export interface ComponentExample {
   name: string;
@@ -22,8 +20,9 @@ export interface ComponentExamples {
 }
 
 async function fetchDemosList(componentName: string): Promise<string[]> {
+  const config = getConfig();
   const component = componentName.toLowerCase().replace(/root$/, "");
-  const url = `${GITHUB_API_BASE}/contents/${DOCS_PATH}/${component}/demos`;
+  const url = `${config.github.apiBase}/contents/${config.github.examplesPath}/${component}/demos`;
 
   try {
     const response = await fetch(url, {
@@ -54,8 +53,9 @@ async function fetchDemoCode(
   demoName: string,
   variant: "css-modules" | "tailwind" = "css-modules"
 ): Promise<{ tsx: string; css?: string } | null> {
+  const config = getConfig();
   const component = componentName.toLowerCase().replace(/root$/, "");
-  const basePath = `${GITHUB_RAW_BASE}/${DOCS_PATH}/${component}/demos/${demoName}/${variant}`;
+  const basePath = `${config.github.rawBase}/${config.github.examplesPath}/${component}/demos/${demoName}/${variant}`;
 
   try {
     const tsxResponse = await fetch(`${basePath}/index.tsx`);
@@ -83,8 +83,9 @@ async function fetchDemoCode(
 }
 
 async function fetchPageContent(componentName: string): Promise<string | null> {
+  const config = getConfig();
   const component = componentName.toLowerCase().replace(/root$/, "");
-  const url = `${GITHUB_RAW_BASE}/${DOCS_PATH}/${component}/page.mdx`;
+  const url = `${config.github.rawBase}/${config.github.examplesPath}/${component}/page.mdx`;
 
   try {
     const response = await fetch(url);
