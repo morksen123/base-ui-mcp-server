@@ -1,5 +1,7 @@
 import { BaseUIComponent } from "@/types";
 import { getComponent } from "./component-tools";
+import { fetchJson } from "@/utils/fetch-json";
+import { getConfig } from "@/config";
 
 export interface InstallationGuide {
   packageName: string;
@@ -32,9 +34,66 @@ export interface SetupChecklist {
   }>;
 }
 
+export interface PackageJson {
+  name: string;
+  version: string;
+  peerDependencies?: {
+    react?: string;
+    "react-dom"?: string;
+    [key: string]: string | undefined;
+  };
+}
+
+// Cache for package.json to avoid repeated fetches
+let packageJsonCache: PackageJson | null = null;
+
+// Export for testing purposes
+export function clearPackageJsonCache(): void {
+  packageJsonCache = null;
+}
+
+export async function fetchPackageJson(): Promise<PackageJson> {
+  if (packageJsonCache) {
+    return packageJsonCache;
+  }
+
+  const config = getConfig();
+  const packageJsonUrl = `${config.github.rawBase}/packages/react/package.json`;
+
+  try {
+    const packageJson = await fetchJson<PackageJson>(packageJsonUrl);
+    packageJsonCache = packageJson;
+    return packageJson;
+  } catch (error) {
+    console.error(
+      "Failed to fetch package.json from Base UI repository:",
+      error
+    );
+
+    // Provide fallback package information based on the actual Base UI package.json
+    const fallbackPackageJson: PackageJson = {
+      name: "@base-ui-components/react",
+      version: "1.0.0-beta.4",
+      peerDependencies: {
+        react: "^17 || ^18 || ^19",
+        "react-dom": "^17 || ^18 || ^19",
+      },
+    };
+
+    console.warn(
+      "Using fallback package information. Installation guide may not reflect the latest package details."
+    );
+    packageJsonCache = fallbackPackageJson;
+    return fallbackPackageJson;
+  }
+}
+
 export async function getInstallationGuide(
   componentNames: string[]
 ): Promise<InstallationGuide> {
+  // Fetch package.json from Base UI repository for accurate package information
+  const packageJson = await fetchPackageJson();
+
   const components: BaseUIComponent[] = [];
   const relatedComponentsSet = new Set<string>();
 
@@ -90,17 +149,24 @@ export async function getInstallationGuide(
 
   const basicUsage = generateBasicUsage(mainComponent);
 
+  // Generate install commands using the actual package name
+  const installCommand = {
+    npm: `npm install ${packageJson.name}`,
+    yarn: `yarn add ${packageJson.name}`,
+    pnpm: `pnpm add ${packageJson.name}`,
+  };
+
+  // Extract peer dependencies, with fallbacks if not available
+  const peerDependencies = {
+    react: packageJson.peerDependencies?.react || "^17 || ^18 || ^19",
+    reactDom:
+      packageJson.peerDependencies?.["react-dom"] || "^17 || ^18 || ^19",
+  };
+
   return {
-    packageName: "@base-ui-components/react",
-    installCommand: {
-      npm: "npm install @base-ui-components/react",
-      yarn: "yarn add @base-ui-components/react",
-      pnpm: "pnpm add @base-ui-components/react",
-    },
-    peerDependencies: {
-      react: "^18.0.0 || ^19.0.0",
-      reactDom: "^18.0.0 || ^19.0.0",
-    },
+    packageName: packageJson.name,
+    installCommand,
+    peerDependencies,
     imports,
     basicUsage,
     relatedComponents: Array.from(relatedComponentsSet),
