@@ -1,11 +1,25 @@
 {
-  "name": "mcp",
+  "name": "base-ui-mcp-server",
   "version": "1.0.0",
-  "description": "MCP server for Base UI React components",
+  "description": "MCP server for Base UI React components - enables AI assistants to interact with Base UI component library",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "mcp": "./dist/index.js"
+    "base-ui-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morksen123/base-ui-mcp-server.git"
+  },
+  "homepage": "https://github.com/morksen123/base-ui-mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/morksen123/base-ui-mcp-server/issues"
   },
   "scripts": {
     "build": "tsup",
@@ -13,9 +27,7 @@
     "start": "node dist/index.js",
     "mcp:inspect": "npx @modelcontextprotocol/inspector node dist/index.js mcp",
     "test": "vitest",
-    "test:watch": "vitest --watch",
-    "lint": "eslint src/**/*.ts",
-    "type-check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "mcp",
@@ -26,20 +38,22 @@
     "assistant",
     "model-context-protocol"
   ],
-  "author": "Your Name",
+  "author": {
+    "name": "morksen123",
+    "url": "https://github.com/morksen123"
+  },
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
     "dedent": "^1.6.0",
     "fuzzysort": "^3.1.0",
+    "https-proxy-agent": "^7.0.6",
+    "node-fetch": "^3.3.2",
     "zod": "^3.22.4",
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
-    "eslint": "^8.54.0",
     "tsup": "^8.5.0",
     "tsx": "^4.6.0",
     "typescript": "^5.3.0",

@@ -1,11 +1,14 @@
 import { BaseUIComponent, BaseUIComponentSchema } from "@/types";
-import { FetchError, ValidationError } from "@/errors/registry-error";
+import {
+  FetchError,
+  ValidationError,
+  NotFoundError,
+  UnauthorizedError,
+  ForbiddenError,
+} from "@/errors/registry-error";
 import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
-
-const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
-const GITHUB_RAW_BASE_URL =
-  "https://raw.githubusercontent.com/mui/base-ui/master/docs/reference/generated";
-const REFERENCE_DOCS_PATH = "docs/reference/generated";
+import { fetchJson, getGitHubHeaders } from "@/utils/fetch-json";
+import { getConfig } from "@/config";
 
 // ============================================================================
 // In-memory fetch cache (no TTL, persists for process lifetime)
@@ -28,7 +31,8 @@ export async function fetchAvailableComponentNames(options?: {
   useCache?: boolean;
 }): Promise<string[]> {
   const useCache = options?.useCache ?? true;
-  const url = `${GITHUB_API_BASE}/contents/${REFERENCE_DOCS_PATH}`;
+  const config = getConfig();
+  const url = `${config.github.apiBase}/contents/${config.github.referencePath}`;
 
   // Check cache if enabled
   if (useCache && resourceCache.has(url)) {
@@ -37,20 +41,9 @@ export async function fetchAvailableComponentNames(options?: {
 
   const fetchPromise = (async () => {
     try {
-      const response = await fetch(url, {
-        headers: {
-          Accept: "application/vnd.github.v3+json",
-        },
+      const data = await fetchJson<any[]>(url, {
+        headers: getGitHubHeaders(),
       });
-
-      if (!response.ok) {
-        throw new FetchError(
-          url,
-          new Error(`HTTP ${response.status}: ${response.statusText}`)
-        );
-      }
-
-      const data = await response.json();
 
       // Filter for JSON files and extract names without extension
       // Exclude hooks (files starting with "use-") as they have a different structure
@@ -95,7 +88,8 @@ export async function fetchComponent(
   options?: { useCache?: boolean }
 ): Promise<BaseUIComponent | null> {
   const useCache = options?.useCache ?? true;
-  const url = `${GITHUB_RAW_BASE_URL}/${componentName}.json`;
+  const config = getConfig();
+  const url = `${config.github.rawBase}/${componentName}.json`;
 
   // Check cache if enabled
   if (useCache && resourceCache.has(url)) {
@@ -104,24 +98,7 @@ export async function fetchComponent(
 
   const fetchPromise = (async () => {
     try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          // Component not found - return null (not an error)
-          console.error(
-            `Component ${componentName} not found in GitHub repository`
-          );
-          return null;
-        }
-
-        throw new FetchError(
-          url,
-          new Error(`HTTP ${response.status}: ${response.statusText}`)
-        );
-      }
-
-      const data = await response.json();
+      const data = await fetchJson(url);
 
       // Validate the data matches our schema
       const result = BaseUIComponentSchema.safeParse(data);
@@ -138,14 +115,30 @@ export async function fetchComponent(
 
       return result.data;
     } catch (error) {
-      if (error instanceof FetchError || error instanceof ValidationError) {
+      // Handle 404 as a special case - return null instead of throwing
+      // This allows callers to distinguish between "not found" (null) vs actual errors
+      if (error instanceof NotFoundError) {
+        console.error(
+          `Component ${componentName} not found in GitHub repository`
+        );
+        return null;
+      }
+
+      // Re-throw all other errors (UnauthorizedError, ForbiddenError, FetchError, ValidationError)
+      if (
+        error instanceof UnauthorizedError ||
+        error instanceof ForbiddenError ||
+        error instanceof FetchError ||
+        error instanceof ValidationError
+      ) {
         throw error;
       }
 
-      // Network or other errors
+      // Wrap unexpected errors
       throw new FetchError(
         url,
-        error instanceof Error ? error : new Error(String(error))
+        undefined,
+        error instanceof Error ? error.message : String(error)
       );
     }
   })();
