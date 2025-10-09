@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Base UI Component Definition Schema
 export const BaseUIComponentSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
@@ -30,7 +29,6 @@ export const BaseUIComponentSchema = z.object({
 
 export type BaseUIComponent = z.infer<typeof BaseUIComponentSchema>;
 
-// MCP Tool Schemas with validation
 export const SearchComponentsSchema = z.object({
   query: z
     .string()
@@ -67,7 +65,6 @@ export const SearchComponentsSchema = z.object({
     .describe("Include data attributes in search"),
 });
 
-// Schemas for MCP tools
 export const GetComponentExamplesSchema = z.object({
   name: z
     .string()
@@ -79,7 +76,6 @@ export const GetComponentExamplesSchema = z.object({
     .describe("Styling variant to filter examples (css-modules or tailwind)"),
 });
 
-// Schemas for installation tools
 export const GetInstallationGuideSchema = z.object({
   componentNames: z
     .array(z.string())
@@ -87,11 +83,8 @@ export const GetInstallationGuideSchema = z.object({
     .describe("Array of component names to get installation guide for"),
 });
 
-export const GetSetupChecklistSchema = z.object({
-  // No parameters needed for this tool
-});
+export const GetSetupChecklistSchema = z.object({});
 
-// Type exports
 export type SearchComponentsParams = z.infer<typeof SearchComponentsSchema>;
 export type GetComponentExamplesParams = z.infer<
   typeof GetComponentExamplesSchema

@@ -10,23 +10,14 @@ import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
 import { fetchJson, getGitHubHeaders } from "@/utils/fetch-json";
 import { getConfig } from "@/config";
 
-// ============================================================================
-// In-memory fetch cache (no TTL, persists for process lifetime)
-// ============================================================================
+// Cache stores promises to prevent duplicate concurrent requests for the same resource
 const resourceCache = new Map<string, Promise<any>>();
 
-/**
- * Clear the entire resource cache
- * Useful for forcing fresh data or freeing memory
- */
 export function clearResourceCache(): void {
   resourceCache.clear();
   console.error("Resource cache cleared");
 }
 
-/**
- * Fetch the list of all component JSON files from GitHub
- */
 export async function fetchAvailableComponentNames(options?: {
   useCache?: boolean;
 }): Promise<string[]> {
@@ -34,7 +25,6 @@ export async function fetchAvailableComponentNames(options?: {
   const config = getConfig();
   const url = `${config.github.apiBase}/contents/${config.github.referencePath}`;
 
-  // Check cache if enabled
   if (useCache && resourceCache.has(url)) {
     return resourceCache.get(url)!;
   }
@@ -45,8 +35,7 @@ export async function fetchAvailableComponentNames(options?: {
         headers: getGitHubHeaders(),
       });
 
-      // Filter for JSON files and extract names without extension
-      // Exclude hooks (files starting with "use-") as they have a different structure
+      // Filter to JSON files only, excluding hooks (use-*) which have different structure
       const componentNames = data
         .filter(
           (item: any) =>
@@ -60,12 +49,10 @@ export async function fetchAvailableComponentNames(options?: {
       return componentNames;
     } catch (error) {
       console.error("Failed to fetch component list from GitHub:", error);
-      // Fallback to a basic list if GitHub API fails
       return getFallbackComponentNames();
     }
   })();
 
-  // Store in cache if enabled
   if (useCache) {
     resourceCache.set(url, fetchPromise);
   }
@@ -73,16 +60,10 @@ export async function fetchAvailableComponentNames(options?: {
   return fetchPromise;
 }
 
-/**
- * Fallback component list in case GitHub API is unavailable
- */
 function getFallbackComponentNames(): string[] {
   return [...FALLBACK_COMPONENT_NAMES];
 }
 
-/**
- * Fetch a single component JSON file from GitHub
- */
 export async function fetchComponent(
   componentName: string,
   options?: { useCache?: boolean }
@@ -91,7 +72,6 @@ export async function fetchComponent(
   const config = getConfig();
   const url = `${config.github.rawBase}/${componentName}.json`;
 
-  // Check cache if enabled
   if (useCache && resourceCache.has(url)) {
     return resourceCache.get(url)!;
   }
@@ -100,7 +80,6 @@ export async function fetchComponent(
     try {
       const data = await fetchJson(url);
 
-      // Validate the data matches our schema
       const result = BaseUIComponentSchema.safeParse(data);
 
       if (!result.success) {
@@ -115,8 +94,6 @@ export async function fetchComponent(
 
       return result.data;
     } catch (error) {
-      // Handle 404 as a special case - return null instead of throwing
-      // This allows callers to distinguish between "not found" (null) vs actual errors
       if (error instanceof NotFoundError) {
         console.error(
           `Component ${componentName} not found in GitHub repository`
@@ -124,7 +101,6 @@ export async function fetchComponent(
         return null;
       }
 
-      // Re-throw all other errors (UnauthorizedError, ForbiddenError, FetchError, ValidationError)
       if (
         error instanceof UnauthorizedError ||
         error instanceof ForbiddenError ||
@@ -134,7 +110,6 @@ export async function fetchComponent(
         throw error;
       }
 
-      // Wrap unexpected errors
       throw new FetchError(
         url,
         undefined,
@@ -143,7 +118,6 @@ export async function fetchComponent(
     }
   })();
 
-  // Store in cache if enabled
   if (useCache) {
     resourceCache.set(url, fetchPromise);
   }
@@ -151,9 +125,6 @@ export async function fetchComponent(
   return fetchPromise;
 }
 
-/**
- * Fetch multiple components in parallel
- */
 export async function fetchComponents(
   componentNames: string[],
   options?: { useCache?: boolean }
@@ -167,7 +138,6 @@ export async function fetchComponents(
         results.set(name, component);
       }
     } catch (error) {
-      // Log error but don't fail the entire fetch
       console.error(`Failed to fetch component ${name}:`, error);
     }
   });
@@ -177,22 +147,15 @@ export async function fetchComponents(
   return results;
 }
 
-/**
- * Fetch all available components dynamically from GitHub
- */
 export async function fetchAllComponents(options?: {
   useCache?: boolean;
 }): Promise<Map<string, BaseUIComponent>> {
-  // Dynamically fetch the list of available components
   const componentNames = await fetchAvailableComponentNames(options);
 
   console.error(`Fetching ${componentNames.length} components from GitHub...`);
   return fetchComponents(componentNames, options);
 }
 
-/**
- * Get the list of all available component names (cached or fetched)
- */
 export async function getAvailableComponentNames(options?: {
   useCache?: boolean;
 }): Promise<string[]> {

@@ -6,10 +6,6 @@ import type {
   SetupChecklist,
 } from "@/tools/installation-tools";
 
-/**
- * Format search results with pagination
- * Inspired by shadcn's formatSearchResultsWithPagination
- */
 export function formatSearchResults(
   results: PaginatedSearchResults,
   query: string
@@ -46,10 +42,6 @@ export function formatSearchResults(
   return response;
 }
 
-/**
- * Format component examples with metadata
- * Includes demos, anatomy, and complete API reference
- */
 export function formatComponentExamples(examples: {
   componentName: string;
   anatomy?: string;
@@ -68,7 +60,6 @@ export function formatComponentExamples(examples: {
 }): string {
   let response = `# ${examples.componentName}\n\n`;
 
-  // Add component metadata if available
   if (examples.component) {
     response += `${
       examples.component.description || "No description available."
@@ -111,7 +102,6 @@ export function formatComponentExamples(examples: {
     });
   }
 
-  // Add detailed component API if available
   if (examples.component) {
     response += `---\n\n## Component API\n\n`;
 
@@ -152,10 +142,6 @@ export function formatComponentExamples(examples: {
   return response;
 }
 
-/**
- * Format installation guide
- * Inspired by shadcn's installation output
- */
 export function formatInstallationGuide(guide: InstallationGuide): string {
   return dedent`
     # Installation Guide
@@ -204,10 +190,6 @@ export function formatInstallationGuide(guide: InstallationGuide): string {
   `;
 }
 
-/**
- * Format setup checklist
- * Inspired by shadcn's audit checklist
- */
 export function formatSetupChecklist(checklist: SetupChecklist): string {
   let response = "# Base UI Setup Checklist\n\n";
 
@@ -230,9 +212,6 @@ export function formatSetupChecklist(checklist: SetupChecklist): string {
   return response;
 }
 
-/**
- * Format error response for "no results found"
- */
 export function formatNoResultsFound(query: string): string {
   return dedent`
     No components found matching "${query}".
@@ -244,9 +223,6 @@ export function formatNoResultsFound(query: string): string {
   `;
 }
 
-/**
- * Format error response for "no examples found"
- */
 export function formatNoExamplesFound(componentName: string): string {
   return dedent`
     No examples found for component "${componentName}".
@@ -257,4 +233,3 @@ export function formatNoExamplesFound(componentName: string): string {
     - Some components may not have dedicated demos yet
   `;
 }
-

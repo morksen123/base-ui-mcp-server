@@ -1,9 +1,5 @@
 import { BaseUIComponent } from "@/types";
-import {
-  fetchComponent,
-  fetchAllComponents,
-  getAvailableComponentNames,
-} from "@/fetchers/github-fetcher";
+import { fetchComponent, fetchAllComponents } from "@/fetchers/github-fetcher";
 import {
   searchWithScoring,
   searchWithPagination,
@@ -13,17 +9,10 @@ import {
   PaginatedSearchResults,
 } from "@/utils/search-utils";
 
-/**
- * Get all components (caching handled by github-fetcher)
- */
 async function getAllComponents(): Promise<Map<string, BaseUIComponent>> {
-  // Caching is handled at the fetch layer in github-fetcher.ts
   return fetchAllComponents();
 }
 
-/**
- * Search components by query string with advanced scoring
- */
 export async function searchComponents(
   query: string,
   limit: number = 10,
@@ -47,9 +36,6 @@ export async function searchComponents(
   return searchResults.map((result) => result.component);
 }
 
-/**
- * Search components with pagination metadata
- */
 export async function searchComponentsWithPagination(
   query: string,
   limit: number = 10,
@@ -71,9 +57,6 @@ export async function searchComponentsWithPagination(
   });
 }
 
-/**
- * Search components with detailed scoring information
- */
 export async function searchComponentsWithScores(
   query: string,
   limit: number = 10
@@ -83,16 +66,11 @@ export async function searchComponentsWithScores(
   return searchWithScoring(components, query, { limit });
 }
 
-/**
- * Get a specific component by name
- */
 export async function getComponent(
   name: string
 ): Promise<BaseUIComponent | null> {
-  // Try to get from cache first
   const components = await getAllComponents();
 
-  // Search for exact match or kebab-case match
   for (const [key, component] of components.entries()) {
     if (
       key.toLowerCase() === name.toLowerCase() ||
@@ -102,14 +80,10 @@ export async function getComponent(
     }
   }
 
-  // If not in cache, try fetching directly
   const component = await fetchComponent(name.toLowerCase());
   return component;
 }
 
-/**
- * List all available components
- */
 export async function listComponents(
   limit: number = 50
 ): Promise<BaseUIComponent[]> {
@@ -119,9 +93,6 @@ export async function listComponents(
   return allComponents.slice(0, limit);
 }
 
-/**
- * Filter components by criteria
- */
 export async function filterComponentsByCriteria(filters: {
   hasProps?: string[];
   hasDataAttributes?: string[];
@@ -132,9 +103,6 @@ export async function filterComponentsByCriteria(filters: {
   return filterComponents(components, filters);
 }
 
-/**
- * Get components grouped by family
- */
 export async function getComponentFamilies(): Promise<
   Map<string, BaseUIComponent[]>
 > {
@@ -142,9 +110,6 @@ export async function getComponentFamilies(): Promise<
   return groupComponentsByFamily(components);
 }
 
-/**
- * Get component name suggestions
- */
 export async function getComponentSuggestions(
   partialInput: string,
   limit: number = 5
@@ -153,9 +118,6 @@ export async function getComponentSuggestions(
   return getSuggestions(components, partialInput, limit);
 }
 
-/**
- * Get component statistics
- */
 export async function getComponentStats(): Promise<{
   total: number;
   families: number;

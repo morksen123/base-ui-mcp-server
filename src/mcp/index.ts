@@ -22,10 +22,6 @@ import {
 import { handleError } from "@/utils/handle-error";
 import { getConfig } from "@/config";
 
-/**
- * Create and configure the MCP server
- * Inspired by shadcn's MCP server setup
- */
 export function createServer() {
   const config = getConfig();
 
@@ -42,7 +38,6 @@ export function createServer() {
     }
   );
 
-  // Register tool definitions
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
       tools: [
@@ -101,7 +96,6 @@ export function createServer() {
     };
   });
 
-  // Register tool call handlers
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
       if (!request.params.arguments) {
@@ -110,10 +104,8 @@ export function createServer() {
 
       const { name, arguments: args } = request.params;
 
-      // Log the tool call for debugging
       console.error(`Tool called: ${name}`, args);
 
-      // Route to appropriate handler
       switch (name) {
         case "search_components":
           return await handleSearchComponents(args);
@@ -138,9 +130,6 @@ export function createServer() {
   return server;
 }
 
-/**
- * Start the MCP server
- */
 export async function startServer() {
   const config = getConfig();
   const server = createServer();

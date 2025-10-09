@@ -5,7 +5,56 @@ All notable changes to the Base UI MCP Server will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-01-06
+## [Beta-0] - 2025-10-09
+
+### Codebase Cleanup & Standards Alignment
+
+Following shadcn MCP patterns for cleaner, more maintainable code.
+
+### Removed
+
+- Verbose BETA_ANALYSIS.md documentation
+- Verbose TESTING.md documentation
+- Unused imports (`UnauthorizedError`, `ForbiddenError`, `NotFoundError` from handle-error.ts)
+- Unused imports (`getAvailableComponentNames` from component-tools.ts)
+- Unused imports (`BaseUIError` from examples-fetcher.ts)
+- Excessive code comments
+
+### Changed
+
+- **Source files**: Removed excessive comments, added meaningful ones following shadcn's clean code style
+- **README.md**: Simplified to essential information
+- **CONTRIBUTING.md**: Condensed to key guidelines
+- Added strategic comments where self-documenting code isn't sufficient
+
+### Added
+
+- Meaningful comments explaining non-obvious implementation details:
+  - Cache deduplication logic
+  - Hook filtering in component fetcher
+  - Fuzzysort threshold behavior
+  - Component family extraction patterns
+
+### Code Quality
+
+- ✅ Test colocation pattern (shadcn standard)
+- ✅ Custom error classes with helpful suggestions
+- ✅ Zod validation for all inputs
+- ✅ Clean, minimal comments
+- ✅ Self-documenting code
+
+### Test Coverage
+
+- MCP Handlers: 564 lines
+- GitHub Fetcher: 473 lines
+- Config System: 223 lines
+- Search Utils: 283 lines
+- Fetch JSON: 355 lines
+- **Total:** 1,898 lines of tests
+
+---
+
+## [1.0.0] - 2025-01-06 (Alpha Release)
 
 ### Added - Milestone 1: Basic MCP Server
 
@@ -21,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub raw content fetcher for component JSON files
 - Component data validation using Zod schemas
 - Parallel fetching for multiple components
-- In-memory caching with 1-hour TTL
+- In-memory caching with request deduplication
 - Support for 30+ Base UI components
 - Real-time data from Base UI GitHub repository
 - Test suite for component fetching (3/3 tests passing)
@@ -31,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Advanced search with fuzzy matching algorithm
 - Multi-field search (name, description, props, data attributes)
 - Relevance scoring with weighted fields
-- Case-insensitive search
+- Case-insensitive matching
 - Component family grouping (Dialog, Menu, Field, etc.)
 - Auto-complete suggestions for partial input
 - Advanced filtering by props, data attributes, CSS variables
@@ -82,9 +131,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Performance
 
-- 1-hour TTL for component cache
+- In-memory caching (no TTL - persists for process lifetime)
+- Request deduplication prevents concurrent duplicate fetches
 - Parallel component fetching
-- Optimized search algorithms
+- Optimized search algorithms with fuzzysort
 - Lazy loading of component data
 
 ### Testing
