@@ -198,73 +198,18 @@ export async function getSetupChecklist(): Promise<SetupChecklist> {
   return {
     items: [
       {
-        id: "install-base-ui",
-        title: "Install Base UI",
-        description: "Install @base-ui-components/react package",
-        required: true,
-        checkCommand: "npm list @base-ui-components/react",
-      },
-      {
-        id: "react-version",
-        title: "Check React Version",
-        description: "Ensure React version is 18.0.0 or higher",
-        required: true,
-        checkCommand: "npm list react",
-      },
-      {
-        id: "typescript",
-        title: "TypeScript Configuration (Optional)",
+        id: "quick-start",
+        title: "Base UI Quick Start Guide",
         description:
-          'If using TypeScript, ensure your tsconfig.json has "moduleResolution": "bundler" or "node16"',
-        required: false,
-      },
-      {
-        id: "css-setup",
-        title: "CSS/Styling Setup",
-        description:
-          "Base UI components are unstyled. Set up your preferred styling solution (CSS Modules, Tailwind, Styled Components, etc.)",
+          "Follow the official Base UI quick start guide for installation and setup instructions.",
         required: true,
-      },
-      {
-        id: "import-test",
-        title: "Test Component Import",
-        description: "Try importing a component to verify the setup",
-        required: true,
-        checkCommand: `node -e "require('@base-ui-components/react/button')"`,
-      },
-      {
-        id: "accessibility",
-        title: "Review Accessibility Features",
-        description:
-          "Base UI components follow WAI-ARIA patterns. Review the accessibility features of the components you use.",
-        required: false,
       },
     ],
     troubleshooting: [
       {
-        issue: "Module not found: @base-ui-components/react",
+        issue: "Need installation help?",
         solution:
-          "Run the install command: npm install @base-ui-components/react. Make sure you are in the correct directory.",
-      },
-      {
-        issue: "React version incompatibility",
-        solution:
-          "Upgrade React to version 18.0.0 or higher: npm install react@^18 react-dom@^18",
-      },
-      {
-        issue: "TypeScript errors with imports",
-        solution:
-          'Update your tsconfig.json to include "moduleResolution": "bundler" and ensure "jsx" is set to "react-jsx" or "react"',
-      },
-      {
-        issue: "Components have no styling",
-        solution:
-          "Base UI components are unstyled by default. Add your own styles using className prop and your preferred CSS solution.",
-      },
-      {
-        issue: "ESM/CommonJS module errors",
-        solution:
-          "Base UI uses ESM. If using CommonJS, you may need to update your build configuration or use dynamic imports.",
+          "Visit the Base UI quick start guide at https://base-ui.com/react/overview/quick-start for complete setup instructions.",
       },
     ],
   };
