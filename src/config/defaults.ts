@@ -47,4 +47,3 @@ export const DEFAULT_CONFIG = {
 } as const;
 
 export type Config = typeof DEFAULT_CONFIG;
-

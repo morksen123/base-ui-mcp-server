@@ -28,7 +28,7 @@ import { getConfig } from "@/config";
  */
 export function createServer() {
   const config = getConfig();
-  
+
   const server = new Server(
     {
       name: config.server.name,
@@ -150,4 +150,3 @@ export async function startServer() {
     `${config.server.name} MCP server v${config.server.version} running on stdio`
   );
 }
-

@@ -12,7 +12,7 @@ import { getConfig } from "@/config";
 /**
  * Unified HTTP client for fetching JSON resources
  * Inspired by shadcn's registry fetcher pattern
- * 
+ *
  * Features:
  * - Uses node-fetch for proxy support (native fetch doesn't support agents)
  * - Proxy support via config (falls back to https_proxy env var)
@@ -140,6 +140,12 @@ export async function fetchJson<T = any>(
       error instanceof NotFoundError ||
       error instanceof FetchError
     ) {
+      throw error;
+    }
+
+    // Re-throw errors from custom error handlers as-is
+    // (They may not be our custom error types)
+    if (options?.onError && error instanceof Error) {
       throw error;
     }
 

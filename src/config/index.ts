@@ -4,11 +4,11 @@ import { ConfigSchema, type Config } from "./schema";
 /**
  * Get and validate configuration
  * Inspired by shadcn's get-config pattern
- * 
+ *
  * Loads configuration from:
  * 1. Default values
  * 2. Environment variables
- * 
+ *
  * Future: Could be extended to load from config file
  */
 
@@ -45,9 +45,7 @@ export function getConfig(): Config {
 
   if (!result.success) {
     console.error("Invalid configuration:", result.error.flatten());
-    throw new Error(
-      `Configuration validation failed: ${result.error.message}`
-    );
+    throw new Error(`Configuration validation failed: ${result.error.message}`);
   }
 
   cachedConfig = result.data;
@@ -93,9 +91,7 @@ export function updateConfig(partial: Partial<Config>): Config {
   const result = ConfigSchema.safeParse(updated);
 
   if (!result.success) {
-    throw new Error(
-      `Configuration validation failed: ${result.error.message}`
-    );
+    throw new Error(`Configuration validation failed: ${result.error.message}`);
   }
 
   cachedConfig = result.data;
@@ -106,4 +102,3 @@ export function updateConfig(partial: Partial<Config>): Config {
 export type { Config } from "./schema";
 export { ConfigSchema } from "./schema";
 export { DEFAULT_CONFIG } from "./defaults";
-
