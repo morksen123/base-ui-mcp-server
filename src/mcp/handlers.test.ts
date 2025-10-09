@@ -48,9 +48,10 @@ describe("MCP Handlers", () => {
         },
       };
 
-      vi.spyOn(componentTools, "searchComponentsWithPagination").mockResolvedValueOnce(
-        mockResults
-      );
+      vi.spyOn(
+        componentTools,
+        "searchComponentsWithPagination"
+      ).mockResolvedValueOnce(mockResults);
 
       const result = await handleSearchComponents({
         query: "dialog",
@@ -59,16 +60,14 @@ describe("MCP Handlers", () => {
         minScore: 0.7,
       });
 
-      expect(componentTools.searchComponentsWithPagination).toHaveBeenCalledWith(
-        "dialog",
-        10,
-        {
-          offset: 0,
-          minScore: 0.7,
-          includeProps: undefined,
-          includeDataAttributes: undefined,
-        }
-      );
+      expect(
+        componentTools.searchComponentsWithPagination
+      ).toHaveBeenCalledWith("dialog", 10, {
+        offset: 0,
+        minScore: 0.7,
+        includeProps: undefined,
+        includeDataAttributes: undefined,
+      });
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].type).toBe("text");
@@ -78,17 +77,18 @@ describe("MCP Handlers", () => {
     });
 
     it("should handle no results found", async () => {
-      vi.spyOn(componentTools, "searchComponentsWithPagination").mockResolvedValueOnce(
-        {
-          items: [],
-          pagination: {
-            total: 0,
-            limit: 10,
-            offset: 0,
-            hasMore: false,
-          },
-        }
-      );
+      vi.spyOn(
+        componentTools,
+        "searchComponentsWithPagination"
+      ).mockResolvedValueOnce({
+        items: [],
+        pagination: {
+          total: 0,
+          limit: 10,
+          offset: 0,
+          hasMore: false,
+        },
+      });
 
       const result = await handleSearchComponents({
         query: "nonexistent",
@@ -102,21 +102,24 @@ describe("MCP Handlers", () => {
     });
 
     it("should use default values for optional parameters", async () => {
-      vi.spyOn(componentTools, "searchComponentsWithPagination").mockResolvedValueOnce(
-        {
-          items: [],
-          pagination: {
-            total: 0,
-            limit: 10,
-            offset: 0,
-            hasMore: false,
-          },
-        }
-      );
+      vi.spyOn(
+        componentTools,
+        "searchComponentsWithPagination"
+      ).mockResolvedValueOnce({
+        items: [],
+        pagination: {
+          total: 0,
+          limit: 10,
+          offset: 0,
+          hasMore: false,
+        },
+      });
 
       await handleSearchComponents({ query: "test" });
 
-      expect(componentTools.searchComponentsWithPagination).toHaveBeenCalledWith(
+      expect(
+        componentTools.searchComponentsWithPagination
+      ).toHaveBeenCalledWith(
         "test",
         10, // default limit
         {
@@ -129,17 +132,18 @@ describe("MCP Handlers", () => {
     });
 
     it("should include props and data attributes when specified", async () => {
-      vi.spyOn(componentTools, "searchComponentsWithPagination").mockResolvedValueOnce(
-        {
-          items: [],
-          pagination: {
-            total: 0,
-            limit: 10,
-            offset: 0,
-            hasMore: false,
-          },
-        }
-      );
+      vi.spyOn(
+        componentTools,
+        "searchComponentsWithPagination"
+      ).mockResolvedValueOnce({
+        items: [],
+        pagination: {
+          total: 0,
+          limit: 10,
+          offset: 0,
+          hasMore: false,
+        },
+      });
 
       await handleSearchComponents({
         query: "test",
@@ -147,22 +151,20 @@ describe("MCP Handlers", () => {
         includeDataAttributes: true,
       });
 
-      expect(componentTools.searchComponentsWithPagination).toHaveBeenCalledWith(
-        "test",
-        10,
-        {
-          offset: 0,
-          minScore: 0.7,
-          includeProps: true,
-          includeDataAttributes: true,
-        }
-      );
+      expect(
+        componentTools.searchComponentsWithPagination
+      ).toHaveBeenCalledWith("test", 10, {
+        offset: 0,
+        minScore: 0.7,
+        includeProps: true,
+        includeDataAttributes: true,
+      });
     });
 
     it("should throw validation error for invalid query", async () => {
-      await expect(
-        handleSearchComponents({ query: "" })
-      ).rejects.toThrow(/Query must not be empty/);
+      await expect(handleSearchComponents({ query: "" })).rejects.toThrow(
+        /Query must not be empty/
+      );
     });
 
     it("should throw validation error for limit > 100", async () => {
@@ -209,22 +211,25 @@ describe("MCP Handlers", () => {
         demos: [
           {
             name: "hero",
-            title: "Dialog Hero Demo",
             description: "A simple dialog example",
-            filename: "hero.tsx",
             code: "export default function App() { return <div>Dialog</div>; }",
-            language: "tsx",
-            variant: "css-modules",
+            language: "tsx" as const,
+            variant: "css-modules" as const,
           },
         ],
         inlineExamples: [],
       };
 
-      vi.spyOn(examplesTools, "getExamples").mockResolvedValueOnce(mockExamples);
+      vi.spyOn(examplesTools, "getExamples").mockResolvedValueOnce(
+        mockExamples
+      );
 
       const result = await handleGetComponentExamples({ name: "DialogRoot" });
 
-      expect(examplesTools.getExamples).toHaveBeenCalledWith("DialogRoot", undefined);
+      expect(examplesTools.getExamples).toHaveBeenCalledWith(
+        "DialogRoot",
+        undefined
+      );
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].type).toBe("text");
@@ -248,25 +253,28 @@ describe("MCP Handlers", () => {
         demos: [
           {
             name: "tailwind-demo",
-            title: "Tailwind Dialog",
             description: "Dialog with Tailwind CSS",
-            filename: "tailwind.tsx",
             code: "export default function App() { return <div className='p-4'>Dialog</div>; }",
-            language: "tsx",
-            variant: "tailwind",
+            language: "tsx" as const,
+            variant: "tailwind" as const,
           },
         ],
         inlineExamples: [],
       };
 
-      vi.spyOn(examplesTools, "getExamples").mockResolvedValueOnce(mockExamples);
+      vi.spyOn(examplesTools, "getExamples").mockResolvedValueOnce(
+        mockExamples
+      );
 
       const result = await handleGetComponentExamples({
         name: "DialogRoot",
         variant: "tailwind",
       });
 
-      expect(examplesTools.getExamples).toHaveBeenCalledWith("DialogRoot", "tailwind");
+      expect(examplesTools.getExamples).toHaveBeenCalledWith(
+        "DialogRoot",
+        "tailwind"
+      );
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].text).toContain("tailwind");
@@ -275,7 +283,7 @@ describe("MCP Handlers", () => {
     it("should handle component with no examples", async () => {
       vi.spyOn(examplesTools, "getExamples").mockResolvedValueOnce({
         componentName: "ObscureComponent",
-        anatomy: undefined,
+        anatomy: "",
         component: {
           name: "ObscureComponent",
           description: "An obscure component",
@@ -288,7 +296,9 @@ describe("MCP Handlers", () => {
         inlineExamples: [],
       });
 
-      const result = await handleGetComponentExamples({ name: "ObscureComponent" });
+      const result = await handleGetComponentExamples({
+        name: "ObscureComponent",
+      });
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].text).toContain("No examples found");
@@ -296,9 +306,9 @@ describe("MCP Handlers", () => {
     });
 
     it("should throw validation error for empty name", async () => {
-      await expect(
-        handleGetComponentExamples({ name: "" })
-      ).rejects.toThrow(/Component name must not be empty/);
+      await expect(handleGetComponentExamples({ name: "" })).rejects.toThrow(
+        /Component name must not be empty/
+      );
     });
 
     it("should throw validation error for invalid variant", async () => {
@@ -321,9 +331,7 @@ describe("MCP Handlers", () => {
           react: "^18.0.0",
           reactDom: "^18.0.0",
         },
-        imports: [
-          'import { Dialog } from "@base-ui-components/react/Dialog";',
-        ],
+        imports: ['import { Dialog } from "@base-ui-components/react/Dialog";'],
         basicUsage: "See component documentation for usage examples.",
         relatedComponents: ["DialogPopup", "DialogTrigger"],
         cssSetup: "Import styles.css",
@@ -360,9 +368,7 @@ describe("MCP Handlers", () => {
           react: "^18.0.0",
           reactDom: "^18.0.0",
         },
-        imports: [
-          'import { Dialog } from "@base-ui-components/react/Dialog";',
-        ],
+        imports: ['import { Dialog } from "@base-ui-components/react/Dialog";'],
         basicUsage: "See component documentation for usage examples.",
         relatedComponents: ["DialogRoot", "DialogPopup", "DialogTrigger"],
       };
@@ -466,13 +472,14 @@ describe("MCP Handlers", () => {
   describe("Error Handling", () => {
     it("should propagate errors from searchComponentsWithPagination", async () => {
       const error = new Error("Search failed");
-      vi.spyOn(componentTools, "searchComponentsWithPagination").mockRejectedValueOnce(
-        error
-      );
+      vi.spyOn(
+        componentTools,
+        "searchComponentsWithPagination"
+      ).mockRejectedValueOnce(error);
 
-      await expect(
-        handleSearchComponents({ query: "test" })
-      ).rejects.toThrow("Search failed");
+      await expect(handleSearchComponents({ query: "test" })).rejects.toThrow(
+        "Search failed"
+      );
     });
 
     it("should propagate errors from getExamples", async () => {
@@ -509,17 +516,18 @@ describe("MCP Handlers", () => {
 
   describe("Response Format", () => {
     it("should return MCP-compatible response structure", async () => {
-      vi.spyOn(componentTools, "searchComponentsWithPagination").mockResolvedValueOnce(
-        {
-          items: [],
-          pagination: {
-            total: 0,
-            limit: 10,
-            offset: 0,
-            hasMore: false,
-          },
-        }
-      );
+      vi.spyOn(
+        componentTools,
+        "searchComponentsWithPagination"
+      ).mockResolvedValueOnce({
+        items: [],
+        pagination: {
+          total: 0,
+          limit: 10,
+          offset: 0,
+          hasMore: false,
+        },
+      });
 
       const result = await handleSearchComponents({ query: "test" });
 
@@ -533,7 +541,7 @@ describe("MCP Handlers", () => {
     it("should always return text content type", async () => {
       vi.spyOn(examplesTools, "getExamples").mockResolvedValueOnce({
         componentName: "Dialog",
-        anatomy: undefined,
+        anatomy: "",
         component: {
           name: "Dialog",
           description: "Test",
@@ -553,4 +561,3 @@ describe("MCP Handlers", () => {
     });
   });
 });
-
