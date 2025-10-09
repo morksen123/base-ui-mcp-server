@@ -109,9 +109,9 @@ describe("fetch-json", () => {
         json: async () => ({ message: "Access denied" }),
       } as any);
 
-      await expect(
-        fetchJson("https://api.example.com/test")
-      ).rejects.toThrow(ForbiddenError);
+      await expect(fetchJson("https://api.example.com/test")).rejects.toThrow(
+        ForbiddenError
+      );
     });
 
     it("should throw NotFoundError on 404", async () => {
@@ -125,9 +125,9 @@ describe("fetch-json", () => {
         json: async () => ({ message: "Resource not found" }),
       } as any);
 
-      await expect(
-        fetchJson("https://api.example.com/test")
-      ).rejects.toThrow(NotFoundError);
+      await expect(fetchJson("https://api.example.com/test")).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("should throw FetchError on 500", async () => {
@@ -141,9 +141,9 @@ describe("fetch-json", () => {
         json: async () => ({ message: "Server error" }),
       } as any);
 
-      await expect(
-        fetchJson("https://api.example.com/test")
-      ).rejects.toThrow(FetchError);
+      await expect(fetchJson("https://api.example.com/test")).rejects.toThrow(
+        FetchError
+      );
     });
 
     it("should parse RFC 7807 error response", async () => {
@@ -185,9 +185,9 @@ describe("fetch-json", () => {
         },
       } as any);
 
-      await expect(
-        fetchJson("https://api.example.com/test")
-      ).rejects.toThrow(FetchError);
+      await expect(fetchJson("https://api.example.com/test")).rejects.toThrow(
+        FetchError
+      );
     });
 
     it("should handle network errors", async () => {
@@ -352,4 +352,3 @@ describe("fetch-json", () => {
     });
   });
 });
-
