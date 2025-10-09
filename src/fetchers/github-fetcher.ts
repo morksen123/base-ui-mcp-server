@@ -1,5 +1,11 @@
 import { BaseUIComponent, BaseUIComponentSchema } from "@/types";
-import { FetchError, ValidationError } from "@/errors/registry-error";
+import {
+  FetchError,
+  ValidationError,
+  NotFoundError,
+  UnauthorizedError,
+  ForbiddenError,
+} from "@/errors/registry-error";
 import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
 import { fetchJson, getGitHubHeaders } from "@/utils/fetch-json";
 
@@ -94,17 +100,7 @@ export async function fetchComponent(
 
   const fetchPromise = (async () => {
     try {
-      const data = await fetchJson(url, {
-        onError: (status) => {
-          if (status === 404) {
-            // Component not found - return null (not an error)
-            // We'll catch this and return null below
-            return new Error("NOT_FOUND");
-          }
-          // Let fetchJson handle other errors normally
-          return new FetchError(url, new Error(`HTTP ${status}`));
-        },
-      });
+      const data = await fetchJson(url);
 
       // Validate the data matches our schema
       const result = BaseUIComponentSchema.safeParse(data);
@@ -122,21 +118,29 @@ export async function fetchComponent(
       return result.data;
     } catch (error) {
       // Handle 404 as a special case - return null instead of throwing
-      if (error instanceof Error && error.message === "NOT_FOUND") {
+      // This allows callers to distinguish between "not found" (null) vs actual errors
+      if (error instanceof NotFoundError) {
         console.error(
           `Component ${componentName} not found in GitHub repository`
         );
         return null;
       }
 
-      if (error instanceof FetchError || error instanceof ValidationError) {
+      // Re-throw all other errors (UnauthorizedError, ForbiddenError, FetchError, ValidationError)
+      if (
+        error instanceof UnauthorizedError ||
+        error instanceof ForbiddenError ||
+        error instanceof FetchError ||
+        error instanceof ValidationError
+      ) {
         throw error;
       }
 
-      // Network or other errors
+      // Wrap unexpected errors
       throw new FetchError(
         url,
-        error instanceof Error ? error : new Error(String(error))
+        undefined,
+        error instanceof Error ? error.message : String(error)
       );
     }
   })();

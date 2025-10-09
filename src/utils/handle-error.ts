@@ -1,6 +1,11 @@
 import { z } from "zod";
 import dedent from "dedent";
-import { BaseUIError } from "@/errors/registry-error";
+import {
+  BaseUIError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+} from "@/errors/registry-error";
 
 /**
  * Centralized error handling for MCP tool calls
@@ -73,4 +78,3 @@ export function handleError(error: unknown): {
     isError: true,
   };
 }
-
