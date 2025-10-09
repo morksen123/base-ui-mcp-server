@@ -1,6 +1,7 @@
 import { BaseUIComponent, BaseUIComponentSchema } from "@/types";
 import { FetchError, ValidationError } from "@/errors/registry-error";
 import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
+import { fetchJson, getGitHubHeaders } from "@/utils/fetch-json";
 
 const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
 const GITHUB_RAW_BASE_URL =
@@ -37,20 +38,9 @@ export async function fetchAvailableComponentNames(options?: {
 
   const fetchPromise = (async () => {
     try {
-      const response = await fetch(url, {
-        headers: {
-          Accept: "application/vnd.github.v3+json",
-        },
+      const data = await fetchJson<any[]>(url, {
+        headers: getGitHubHeaders(),
       });
-
-      if (!response.ok) {
-        throw new FetchError(
-          url,
-          new Error(`HTTP ${response.status}: ${response.statusText}`)
-        );
-      }
-
-      const data = await response.json();
 
       // Filter for JSON files and extract names without extension
       // Exclude hooks (files starting with "use-") as they have a different structure
@@ -104,24 +94,17 @@ export async function fetchComponent(
 
   const fetchPromise = (async () => {
     try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          // Component not found - return null (not an error)
-          console.error(
-            `Component ${componentName} not found in GitHub repository`
-          );
-          return null;
-        }
-
-        throw new FetchError(
-          url,
-          new Error(`HTTP ${response.status}: ${response.statusText}`)
-        );
-      }
-
-      const data = await response.json();
+      const data = await fetchJson(url, {
+        onError: (status) => {
+          if (status === 404) {
+            // Component not found - return null (not an error)
+            // We'll catch this and return null below
+            return new Error("NOT_FOUND");
+          }
+          // Let fetchJson handle other errors normally
+          return new FetchError(url, new Error(`HTTP ${status}`));
+        },
+      });
 
       // Validate the data matches our schema
       const result = BaseUIComponentSchema.safeParse(data);
@@ -138,6 +121,14 @@ export async function fetchComponent(
 
       return result.data;
     } catch (error) {
+      // Handle 404 as a special case - return null instead of throwing
+      if (error instanceof Error && error.message === "NOT_FOUND") {
+        console.error(
+          `Component ${componentName} not found in GitHub repository`
+        );
+        return null;
+      }
+
       if (error instanceof FetchError || error instanceof ValidationError) {
         throw error;
       }
