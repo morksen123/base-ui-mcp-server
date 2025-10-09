@@ -1,5 +1,3 @@
-import { BaseUIError } from "@/errors/registry-error";
-
 const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
 const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/mui/base-ui/master";
 const DOCS_PATH = "docs/src/app/(public)/(content)/react/components";
@@ -23,9 +21,6 @@ export interface ComponentExamples {
   }>;
 }
 
-/**
- * Fetch the directory structure for a component's demos
- */
 async function fetchDemosList(componentName: string): Promise<string[]> {
   const component = componentName.toLowerCase().replace(/root$/, "");
   const url = `${GITHUB_API_BASE}/contents/${DOCS_PATH}/${component}/demos`;
@@ -54,9 +49,6 @@ async function fetchDemosList(componentName: string): Promise<string[]> {
   }
 }
 
-/**
- * Fetch example code from a demo
- */
 async function fetchDemoCode(
   componentName: string,
   demoName: string,
@@ -66,14 +58,12 @@ async function fetchDemoCode(
   const basePath = `${GITHUB_RAW_BASE}/${DOCS_PATH}/${component}/demos/${demoName}/${variant}`;
 
   try {
-    // Fetch TypeScript/JSX code
     const tsxResponse = await fetch(`${basePath}/index.tsx`);
     if (!tsxResponse.ok) {
       return null;
     }
     const tsx = await tsxResponse.text();
 
-    // Try to fetch CSS if it's css-modules variant
     let css: string | undefined;
     if (variant === "css-modules") {
       const cssResponse = await fetch(`${basePath}/index.module.css`);
@@ -92,9 +82,6 @@ async function fetchDemoCode(
   }
 }
 
-/**
- * Fetch the page.mdx content to extract anatomy and inline examples
- */
 async function fetchPageContent(componentName: string): Promise<string | null> {
   const component = componentName.toLowerCase().replace(/root$/, "");
   const url = `${GITHUB_RAW_BASE}/${DOCS_PATH}/${component}/page.mdx`;
@@ -111,23 +98,16 @@ async function fetchPageContent(componentName: string): Promise<string | null> {
   }
 }
 
-/**
- * Parse anatomy from page content
- */
 function parseAnatomy(pageContent: string): string {
   const anatomyMatch = pageContent.match(/```jsx title="Anatomy"([\s\S]*?)```/);
   return anatomyMatch ? anatomyMatch[1].trim() : "";
 }
 
-/**
- * Parse inline examples from page content
- */
 function parseInlineExamples(
   pageContent: string
 ): Array<{ title: string; code: string }> {
   const examples: Array<{ title: string; code: string }> = [];
 
-  // Match code blocks with titles, excluding the anatomy block
   const codeBlockRegex =
     /```(?:tsx|jsx|js)(?:\s+title="([^"]+)")?([\s\S]*?)```/g;
   let match;
@@ -136,7 +116,6 @@ function parseInlineExamples(
     const title = match[1] || "Example";
     const code = match[2].trim();
 
-    // Skip the anatomy block
     if (title !== "Anatomy" && code.length > 0) {
       examples.push({ title, code });
     }
@@ -145,25 +124,18 @@ function parseInlineExamples(
   return examples;
 }
 
-/**
- * Get all examples for a component
- */
 export async function getComponentExamples(
   componentName: string
 ): Promise<ComponentExamples> {
-  // Fetch demos list
   const demoNames = await fetchDemosList(componentName);
 
-  // Fetch page content for anatomy and inline examples
   const pageContent = await fetchPageContent(componentName);
   const anatomy = pageContent ? parseAnatomy(pageContent) : "";
   const inlineExamples = pageContent ? parseInlineExamples(pageContent) : [];
 
-  // Fetch code for each demo (both CSS Modules and Tailwind variants)
   const demos: ComponentExample[] = [];
 
   for (const demoName of demoNames) {
-    // Fetch CSS Modules variant
     const cssModulesCode = await fetchDemoCode(
       componentName,
       demoName,
@@ -180,7 +152,6 @@ export async function getComponentExamples(
       });
     }
 
-    // Fetch Tailwind variant
     const tailwindCode = await fetchDemoCode(
       componentName,
       demoName,
@@ -205,9 +176,6 @@ export async function getComponentExamples(
   };
 }
 
-/**
- * Format demo name to be more readable
- */
 function formatDemoName(demoName: string): string {
   return demoName
     .split("-")
@@ -215,9 +183,6 @@ function formatDemoName(demoName: string): string {
     .join(" ");
 }
 
-/**
- * Get a specific demo by name
- */
 export async function getSpecificDemo(
   componentName: string,
   demoName: string,

@@ -32,23 +32,18 @@ export interface SetupChecklist {
   }>;
 }
 
-/**
- * Get installation guide for one or more components
- */
 export async function getInstallationGuide(
   componentNames: string[]
 ): Promise<InstallationGuide> {
   const components: BaseUIComponent[] = [];
   const relatedComponentsSet = new Set<string>();
 
-  // Fetch all requested components
   for (const name of componentNames) {
     const component = await getComponent(name);
     if (component) {
       components.push(component);
 
-      // Extract related components from component name patterns
-      // e.g., DialogRoot, DialogTrigger, DialogPopup all belong to Dialog family
+      // Extract component family by removing common suffixes
       const family = name.replace(
         /Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value/gi,
         ""
@@ -63,7 +58,6 @@ export async function getInstallationGuide(
     throw new Error(`No components found for: ${componentNames.join(", ")}`);
   }
 
-  // Get the main component family name
   const mainComponent = components[0].name;
   const componentFamily = mainComponent
     .replace(
@@ -72,7 +66,6 @@ export async function getInstallationGuide(
     )
     .toLowerCase();
 
-  // Generate imports
   const imports: string[] = [];
   const uniqueFamilies = new Set<string>();
 
@@ -95,7 +88,6 @@ export async function getInstallationGuide(
     );
   });
 
-  // Generate basic usage based on the component type
   const basicUsage = generateBasicUsage(mainComponent);
 
   return {
@@ -136,9 +128,6 @@ import styles from './styles.module.css';
   };
 }
 
-/**
- * Get setup checklist for Base UI
- */
 export async function getSetupChecklist(): Promise<SetupChecklist> {
   return {
     items: [
@@ -215,9 +204,6 @@ export async function getSetupChecklist(): Promise<SetupChecklist> {
   };
 }
 
-/**
- * Get component dependencies and related components
- */
 export async function getComponentDependencies(componentName: string): Promise<{
   component: string;
   peerDependencies: Record<string, string>;
@@ -232,16 +218,13 @@ export async function getComponentDependencies(componentName: string): Promise<{
     throw new Error(`Component "${componentName}" not found`);
   }
 
-  // Determine component family
   const family = componentName.replace(
     /Root|Trigger|Popup|Backdrop|Portal|Close|Item|Content|Control|Value|Positioner|Arrow|Title|Description/gi,
     ""
   );
 
-  // Get related components based on common patterns
   const relatedComponents = getRelatedComponentsByFamily(family);
 
-  // Determine required vs optional parts based on component type
   const { required, optional } = categorizeComponentParts(
     family,
     relatedComponents
@@ -260,16 +243,10 @@ export async function getComponentDependencies(componentName: string): Promise<{
   };
 }
 
-/**
- * Helper: Format component name to PascalCase
- */
 function formatComponentName(name: string): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-/**
- * Helper: Generate basic usage example
- */
 function generateBasicUsage(componentName: string): string {
   const family = componentName
     .replace(
@@ -279,7 +256,6 @@ function generateBasicUsage(componentName: string): string {
     .toLowerCase();
   const Component = formatComponentName(family);
 
-  // Component-specific usage patterns
   const usagePatterns: Record<string, string> = {
     dialog: `<Dialog.Root>
   <Dialog.Trigger>Open Dialog</Dialog.Trigger>
@@ -338,9 +314,6 @@ function generateBasicUsage(componentName: string): string {
   );
 }
 
-/**
- * Helper: Get related components by family
- */
 function getRelatedComponentsByFamily(family: string): string[] {
   const componentFamilies: Record<string, string[]> = {
     Dialog: [
@@ -414,14 +387,10 @@ function getRelatedComponentsByFamily(family: string): string[] {
   return componentFamilies[family] || [];
 }
 
-/**
- * Helper: Categorize component parts as required or optional
- */
 function categorizeComponentParts(
   family: string,
   relatedComponents: string[]
 ): { required: string[]; optional: string[] } {
-  // Common patterns for required vs optional parts
   const requiredPatterns = ["Root", "Trigger", "Popup", "Control", "Track"];
   const optionalPatterns = [
     "Portal",

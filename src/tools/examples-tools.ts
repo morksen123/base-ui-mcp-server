@@ -5,22 +5,16 @@ import {
 import { fetchComponent } from "@/fetchers/github-fetcher";
 import { BaseUIError } from "@/errors/registry-error";
 
-/**
- * Get all examples for a component including component metadata
- * (props, data attributes, CSS variables)
- */
 export async function getExamples(
   componentName: string,
   variant?: "css-modules" | "tailwind"
 ) {
   try {
-    // Fetch examples and component metadata in parallel
     const [examples, component] = await Promise.all([
       getComponentExamples(componentName),
       fetchComponent(componentName.toLowerCase()),
     ]);
 
-    // Filter by variant if specified
     let filteredDemos = examples.demos;
     if (variant) {
       filteredDemos = examples.demos.filter((demo) => demo.variant === variant);
@@ -31,7 +25,6 @@ export async function getExamples(
       anatomy: examples.anatomy,
       demos: filteredDemos,
       inlineExamples: examples.inlineExamples,
-      // Include component metadata
       component: component || undefined,
     };
   } catch (error) {
@@ -46,9 +39,6 @@ export async function getExamples(
   }
 }
 
-/**
- * Get a specific demo by name
- */
 export async function getDemo(
   componentName: string,
   demoName: string,

@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-/**
- * Configuration schema for Base UI MCP Server
- * Uses Zod for runtime validation, inspired by shadcn
- */
 export const ConfigSchema = z.object({
   github: z.object({
     apiBase: z.string().url(),

@@ -19,9 +19,6 @@ import {
   formatNoExamplesFound,
 } from "./utils";
 
-/**
- * Handle search_components tool call
- */
 export async function handleSearchComponents(args: unknown) {
   const parsedArgs = SearchComponentsSchema.parse(args);
 
@@ -57,9 +54,6 @@ export async function handleSearchComponents(args: unknown) {
   };
 }
 
-/**
- * Handle get_component_examples tool call
- */
 export async function handleGetComponentExamples(args: unknown) {
   const parsedArgs = GetComponentExamplesSchema.parse(args);
 
@@ -86,9 +80,6 @@ export async function handleGetComponentExamples(args: unknown) {
   };
 }
 
-/**
- * Handle get_installation_guide tool call
- */
 export async function handleGetInstallationGuide(args: unknown) {
   const parsedArgs = GetInstallationGuideSchema.parse(args);
 
@@ -104,9 +95,6 @@ export async function handleGetInstallationGuide(args: unknown) {
   };
 }
 
-/**
- * Handle get_setup_checklist tool call
- */
 export async function handleGetSetupChecklist(args: unknown) {
   GetSetupChecklistSchema.parse(args);
 
@@ -121,4 +109,3 @@ export async function handleGetSetupChecklist(args: unknown) {
     ],
   };
 }
-

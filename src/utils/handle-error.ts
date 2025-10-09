@@ -1,23 +1,11 @@
 import { z } from "zod";
 import dedent from "dedent";
-import {
-  BaseUIError,
-  UnauthorizedError,
-  ForbiddenError,
-  NotFoundError,
-} from "@/errors/registry-error";
+import { BaseUIError } from "@/errors/registry-error";
 
-/**
- * Centralized error handling for MCP tool calls
- * Inspired by shadcn's handleError utility
- *
- * Converts errors into MCP-compatible error responses with helpful messages
- */
 export function handleError(error: unknown): {
   content: Array<{ type: "text"; text: string }>;
   isError: true;
 } {
-  // Handle Zod validation errors
   if (error instanceof z.ZodError) {
     return {
       content: [
@@ -35,7 +23,6 @@ export function handleError(error: unknown): {
     };
   }
 
-  // Handle custom BaseUI errors
   if (error instanceof BaseUIError) {
     let errorMessage = error.message;
 
@@ -60,7 +47,6 @@ export function handleError(error: unknown): {
     };
   }
 
-  // Handle unknown errors
   const errorMessage = error instanceof Error ? error.message : String(error);
   console.error("Unexpected error:", error);
 
