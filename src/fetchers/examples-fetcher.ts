@@ -1,4 +1,5 @@
 import { getConfig } from "@/config";
+import { fetchJson, fetchText, getGitHubHeaders } from "@/utils/fetch-json";
 
 export interface ComponentExample {
   name: string;
@@ -25,20 +26,10 @@ async function fetchDemosList(componentName: string): Promise<string[]> {
   const url = `${config.github.apiBase}/contents/${config.github.examplesPath}/${component}/demos`;
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-      },
+    const data = await fetchJson<any[]>(url, {
+      headers: getGitHubHeaders(),
     });
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return [];
-      }
-      throw new Error(`GitHub API error: ${response.status}`);
-    }
-
-    const data = await response.json();
     return data
       .filter((item: any) => item.type === "dir")
       .map((item: any) => item.name);
@@ -58,18 +49,14 @@ async function fetchDemoCode(
   const basePath = `${config.github.rawBase}/${config.github.examplesPath}/${component}/demos/${demoName}/${variant}`;
 
   try {
-    const tsxResponse = await fetch(`${basePath}/index.tsx`);
-    if (!tsxResponse.ok) {
+    const tsx = await fetchText(`${basePath}/index.tsx`);
+    if (!tsx) {
       return null;
     }
-    const tsx = await tsxResponse.text();
 
     let css: string | undefined;
     if (variant === "css-modules") {
-      const cssResponse = await fetch(`${basePath}/index.module.css`);
-      if (cssResponse.ok) {
-        css = await cssResponse.text();
-      }
+      css = (await fetchText(`${basePath}/index.module.css`)) || undefined;
     }
 
     return { tsx, css };
@@ -87,16 +74,7 @@ async function fetchPageContent(componentName: string): Promise<string | null> {
   const component = componentName.toLowerCase().replace(/root$/, "");
   const url = `${config.github.rawBase}/${config.github.examplesPath}/${component}/page.mdx`;
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      return null;
-    }
-    return await response.text();
-  } catch (error) {
-    console.error(`Failed to fetch page content for ${componentName}:`, error);
-    return null;
-  }
+  return await fetchText(url);
 }
 
 function parseAnatomy(pageContent: string): string {

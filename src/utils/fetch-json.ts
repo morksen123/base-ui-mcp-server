@@ -31,7 +31,6 @@ export async function fetchJson<T = any>(
         Accept: "application/json",
         ...options?.headers,
       },
-      // @ts-ignore - node-fetch types don't match perfectly
       agent: getProxyAgent(),
     });
 
@@ -108,6 +107,29 @@ export async function fetchJson<T = any>(
       undefined,
       error instanceof Error ? error.message : String(error)
     );
+  }
+}
+
+export async function fetchText(
+  url: string,
+  options?: { headers?: Record<string, string> }
+): Promise<string | null> {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        ...options?.headers,
+      },
+      agent: getProxyAgent(),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.text();
+  } catch (error) {
+    console.error(`Failed to fetch text from ${url}:`, error);
+    return null;
   }
 }
 
