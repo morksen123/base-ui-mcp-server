@@ -6,7 +6,7 @@ import {
   UnauthorizedError,
   ForbiddenError,
 } from "@/errors/registry-error";
-import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
+import { FALLBACK_COMPONENT_NAMES } from "@/constants";
 import { fetchJson, getGitHubHeaders } from "@/utils/fetch-json";
 import { getConfig } from "@/config";
 

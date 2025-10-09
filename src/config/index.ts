@@ -1,5 +1,10 @@
-import { DEFAULT_CONFIG } from "./defaults";
 import { ConfigSchema, type Config } from "./schema";
+import {
+  GITHUB_CONFIG,
+  SERVER_CONFIG,
+  FETCHER_CONFIG,
+  CACHE_CONFIG,
+} from "@/constants";
 
 let cachedConfig: Config | null = null;
 
@@ -9,18 +14,16 @@ export function getConfig(): Config {
   }
 
   const config = {
-    ...DEFAULT_CONFIG,
     github: {
-      ...DEFAULT_CONFIG.github,
-      token: process.env.GITHUB_TOKEN || DEFAULT_CONFIG.github.token,
+      ...GITHUB_CONFIG,
+      token: process.env.GITHUB_TOKEN || undefined,
     },
+    cache: CACHE_CONFIG,
     fetcher: {
-      ...DEFAULT_CONFIG.fetcher,
-      proxy:
-        process.env.https_proxy ||
-        process.env.HTTPS_PROXY ||
-        DEFAULT_CONFIG.fetcher.proxy,
+      ...FETCHER_CONFIG,
+      proxy: process.env.https_proxy || undefined,
     },
+    server: SERVER_CONFIG,
   };
 
   const result = ConfigSchema.safeParse(config);
@@ -73,4 +76,3 @@ export function updateConfig(partial: Partial<Config>): Config {
 
 export type { Config } from "./schema";
 export { ConfigSchema } from "./schema";
-export { DEFAULT_CONFIG } from "./defaults";

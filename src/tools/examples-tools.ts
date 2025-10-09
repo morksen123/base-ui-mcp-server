@@ -1,7 +1,4 @@
-import {
-  getComponentExamples,
-  getSpecificDemo,
-} from "@/fetchers/examples-fetcher";
+import { getComponentExamples } from "@/fetchers/examples-fetcher";
 import { fetchComponent } from "@/fetchers/github-fetcher";
 import { BaseUIError } from "@/errors/registry-error";
 
