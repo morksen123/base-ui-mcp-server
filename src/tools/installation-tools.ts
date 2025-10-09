@@ -1,5 +1,7 @@
 import { BaseUIComponent } from "@/types";
 import { getComponent } from "./component-tools";
+import { fetchJson } from "@/utils/fetch-json";
+import { getConfig } from "@/config";
 
 export interface InstallationGuide {
   packageName: string;
@@ -32,9 +34,66 @@ export interface SetupChecklist {
   }>;
 }
 
+export interface PackageJson {
+  name: string;
+  version: string;
+  peerDependencies?: {
+    react?: string;
+    "react-dom"?: string;
+    [key: string]: string | undefined;
+  };
+}
+
+// Cache for package.json to avoid repeated fetches
+let packageJsonCache: PackageJson | null = null;
+
+// Export for testing purposes
+export function clearPackageJsonCache(): void {
+  packageJsonCache = null;
+}
+
+export async function fetchPackageJson(): Promise<PackageJson> {
+  if (packageJsonCache) {
+    return packageJsonCache;
+  }
+
+  const config = getConfig();
+  const packageJsonUrl = `${config.github.rawBase}/packages/react/package.json`;
+
+  try {
+    const packageJson = await fetchJson<PackageJson>(packageJsonUrl);
+    packageJsonCache = packageJson;
+    return packageJson;
+  } catch (error) {
+    console.error(
+      "Failed to fetch package.json from Base UI repository:",
+      error
+    );
+
+    // Provide fallback package information based on the actual Base UI package.json
+    const fallbackPackageJson: PackageJson = {
+      name: "@base-ui-components/react",
+      version: "1.0.0-beta.4",
+      peerDependencies: {
+        react: "^17 || ^18 || ^19",
+        "react-dom": "^17 || ^18 || ^19",
+      },
+    };
+
+    console.warn(
+      "Using fallback package information. Installation guide may not reflect the latest package details."
+    );
+    packageJsonCache = fallbackPackageJson;
+    return fallbackPackageJson;
+  }
+}
+
 export async function getInstallationGuide(
   componentNames: string[]
 ): Promise<InstallationGuide> {
+  // Fetch package.json from Base UI repository for accurate package information
+  const packageJson = await fetchPackageJson();
+
   const components: BaseUIComponent[] = [];
   const relatedComponentsSet = new Set<string>();
 
@@ -90,17 +149,24 @@ export async function getInstallationGuide(
 
   const basicUsage = generateBasicUsage(mainComponent);
 
+  // Generate install commands using the actual package name
+  const installCommand = {
+    npm: `npm install ${packageJson.name}`,
+    yarn: `yarn add ${packageJson.name}`,
+    pnpm: `pnpm add ${packageJson.name}`,
+  };
+
+  // Extract peer dependencies, with fallbacks if not available
+  const peerDependencies = {
+    react: packageJson.peerDependencies?.react || "^17 || ^18 || ^19",
+    reactDom:
+      packageJson.peerDependencies?.["react-dom"] || "^17 || ^18 || ^19",
+  };
+
   return {
-    packageName: "@base-ui-components/react",
-    installCommand: {
-      npm: "npm install @base-ui-components/react",
-      yarn: "yarn add @base-ui-components/react",
-      pnpm: "pnpm add @base-ui-components/react",
-    },
-    peerDependencies: {
-      react: "^18.0.0 || ^19.0.0",
-      reactDom: "^18.0.0 || ^19.0.0",
-    },
+    packageName: packageJson.name,
+    installCommand,
+    peerDependencies,
     imports,
     basicUsage,
     relatedComponents: Array.from(relatedComponentsSet),
@@ -132,73 +198,18 @@ export async function getSetupChecklist(): Promise<SetupChecklist> {
   return {
     items: [
       {
-        id: "install-base-ui",
-        title: "Install Base UI",
-        description: "Install @base-ui-components/react package",
-        required: true,
-        checkCommand: "npm list @base-ui-components/react",
-      },
-      {
-        id: "react-version",
-        title: "Check React Version",
-        description: "Ensure React version is 18.0.0 or higher",
-        required: true,
-        checkCommand: "npm list react",
-      },
-      {
-        id: "typescript",
-        title: "TypeScript Configuration (Optional)",
+        id: "quick-start",
+        title: "Base UI Quick Start Guide",
         description:
-          'If using TypeScript, ensure your tsconfig.json has "moduleResolution": "bundler" or "node16"',
-        required: false,
-      },
-      {
-        id: "css-setup",
-        title: "CSS/Styling Setup",
-        description:
-          "Base UI components are unstyled. Set up your preferred styling solution (CSS Modules, Tailwind, Styled Components, etc.)",
+          "Follow the official Base UI quick start guide for installation and setup instructions.",
         required: true,
-      },
-      {
-        id: "import-test",
-        title: "Test Component Import",
-        description: "Try importing a component to verify the setup",
-        required: true,
-        checkCommand: `node -e "require('@base-ui-components/react/button')"`,
-      },
-      {
-        id: "accessibility",
-        title: "Review Accessibility Features",
-        description:
-          "Base UI components follow WAI-ARIA patterns. Review the accessibility features of the components you use.",
-        required: false,
       },
     ],
     troubleshooting: [
       {
-        issue: "Module not found: @base-ui-components/react",
+        issue: "Need installation help?",
         solution:
-          "Run the install command: npm install @base-ui-components/react. Make sure you are in the correct directory.",
-      },
-      {
-        issue: "React version incompatibility",
-        solution:
-          "Upgrade React to version 18.0.0 or higher: npm install react@^18 react-dom@^18",
-      },
-      {
-        issue: "TypeScript errors with imports",
-        solution:
-          'Update your tsconfig.json to include "moduleResolution": "bundler" and ensure "jsx" is set to "react-jsx" or "react"',
-      },
-      {
-        issue: "Components have no styling",
-        solution:
-          "Base UI components are unstyled by default. Add your own styles using className prop and your preferred CSS solution.",
-      },
-      {
-        issue: "ESM/CommonJS module errors",
-        solution:
-          "Base UI uses ESM. If using CommonJS, you may need to update your build configuration or use dynamic imports.",
+          "Visit the Base UI quick start guide at https://base-ui.com/react/overview/quick-start for complete setup instructions.",
       },
     ],
   };
