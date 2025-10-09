@@ -7,23 +7,29 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "@/errors/registry-error";
+import { getConfig } from "@/config";
 
 /**
  * Unified HTTP client for fetching JSON resources
  * Inspired by shadcn's registry fetcher pattern
- *
+ * 
  * Features:
  * - Uses node-fetch for proxy support (native fetch doesn't support agents)
- * - Proxy support via https_proxy env var
+ * - Proxy support via config (falls back to https_proxy env var)
  * - Custom headers per request
  * - RFC 7807-compatible error messages with zod validation
  * - Status code mapping to specific error classes (401, 403, 404)
  */
 
-// Create proxy agent if https_proxy is set
-const httpsAgent = process.env.https_proxy
-  ? new HttpsProxyAgent(process.env.https_proxy)
-  : undefined;
+/**
+ * Get proxy agent based on configuration
+ */
+function getProxyAgent() {
+  const config = getConfig();
+  return config.fetcher.proxy
+    ? new HttpsProxyAgent(config.fetcher.proxy)
+    : undefined;
+}
 
 export interface FetchJsonOptions {
   /**
@@ -59,7 +65,7 @@ export async function fetchJson<T = any>(
         ...options?.headers,
       },
       // @ts-ignore - node-fetch types don't match perfectly
-      agent: httpsAgent,
+      agent: getProxyAgent(),
     });
 
     if (!response.ok) {
@@ -148,15 +154,17 @@ export async function fetchJson<T = any>(
 
 /**
  * Helper to get default GitHub API headers
+ * Uses config for GitHub token
  */
 export function getGitHubHeaders(): Record<string, string> {
+  const config = getConfig();
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
   };
 
   // Add GitHub token if available for higher rate limits
-  if (process.env.GITHUB_TOKEN) {
-    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  if (config.github.token) {
+    headers.Authorization = `Bearer ${config.github.token}`;
   }
 
   return headers;

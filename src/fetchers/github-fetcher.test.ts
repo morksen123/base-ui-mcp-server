@@ -6,7 +6,11 @@ import {
   clearResourceCache,
 } from "@/fetchers/github-fetcher";
 import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
-import { NotFoundError, FetchError, ValidationError } from "@/errors/registry-error";
+import {
+  NotFoundError,
+  FetchError,
+  ValidationError,
+} from "@/errors/registry-error";
 
 // Mock node-fetch module
 vi.mock("node-fetch", () => ({

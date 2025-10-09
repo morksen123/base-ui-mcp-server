@@ -20,16 +20,19 @@ import {
   handleGetSetupChecklist,
 } from "./handlers";
 import { handleError } from "@/utils/handle-error";
+import { getConfig } from "@/config";
 
 /**
  * Create and configure the MCP server
  * Inspired by shadcn's MCP server setup
  */
 export function createServer() {
+  const config = getConfig();
+  
   const server = new Server(
     {
-      name: "base-ui",
-      version: "1.0.0",
+      name: config.server.name,
+      version: config.server.version,
     },
     {
       capabilities: {
@@ -139,9 +142,12 @@ export function createServer() {
  * Start the MCP server
  */
 export async function startServer() {
+  const config = getConfig();
   const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Base UI MCP server running on stdio");
+  console.error(
+    `${config.server.name} MCP server v${config.server.version} running on stdio`
+  );
 }
 

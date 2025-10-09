@@ -8,11 +8,7 @@ import {
 } from "@/errors/registry-error";
 import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
 import { fetchJson, getGitHubHeaders } from "@/utils/fetch-json";
-
-const GITHUB_API_BASE = "https://api.github.com/repos/mui/base-ui";
-const GITHUB_RAW_BASE_URL =
-  "https://raw.githubusercontent.com/mui/base-ui/master/docs/reference/generated";
-const REFERENCE_DOCS_PATH = "docs/reference/generated";
+import { getConfig } from "@/config";
 
 // ============================================================================
 // In-memory fetch cache (no TTL, persists for process lifetime)
@@ -35,7 +31,8 @@ export async function fetchAvailableComponentNames(options?: {
   useCache?: boolean;
 }): Promise<string[]> {
   const useCache = options?.useCache ?? true;
-  const url = `${GITHUB_API_BASE}/contents/${REFERENCE_DOCS_PATH}`;
+  const config = getConfig();
+  const url = `${config.github.apiBase}/contents/${config.github.referencePath}`;
 
   // Check cache if enabled
   if (useCache && resourceCache.has(url)) {
@@ -91,7 +88,8 @@ export async function fetchComponent(
   options?: { useCache?: boolean }
 ): Promise<BaseUIComponent | null> {
   const useCache = options?.useCache ?? true;
-  const url = `${GITHUB_RAW_BASE_URL}/${componentName}.json`;
+  const config = getConfig();
+  const url = `${config.github.rawBase}/${componentName}.json`;
 
   // Check cache if enabled
   if (useCache && resourceCache.has(url)) {
