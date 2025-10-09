@@ -5,6 +5,7 @@ export const ConfigSchema = z.object({
     apiBase: z.string().url(),
     rawBase: z.string().url(),
     referencePath: z.string(),
+    examplesPath: z.string(),
     token: z.string().optional(),
   }),
 

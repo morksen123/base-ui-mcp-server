@@ -38,38 +38,3 @@ export async function getExamples(
     );
   }
 }
-
-export async function getDemo(
-  componentName: string,
-  demoName: string,
-  variant: "css-modules" | "tailwind" = "css-modules"
-) {
-  try {
-    const demo = await getSpecificDemo(componentName, demoName, variant);
-
-    if (!demo) {
-      throw new BaseUIError(
-        `Demo "${demoName}" not found for component "${componentName}"`,
-        {
-          code: "NOT_FOUND",
-          suggestion: "Use get_component_examples to see all available demos",
-          context: { componentName, demoName, variant },
-        }
-      );
-    }
-
-    return demo;
-  } catch (error) {
-    if (error instanceof BaseUIError) {
-      throw error;
-    }
-    throw new BaseUIError(
-      `Failed to fetch demo "${demoName}" for component "${componentName}"`,
-      {
-        code: "FETCH_ERROR",
-        suggestion: "Check if the demo name is correct and try again",
-        context: { componentName, demoName, variant, error: String(error) },
-      }
-    );
-  }
-}

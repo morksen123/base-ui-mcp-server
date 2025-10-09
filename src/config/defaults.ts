@@ -1,9 +1,9 @@
 export const DEFAULT_CONFIG = {
   github: {
     apiBase: "https://api.github.com/repos/mui/base-ui",
-    rawBase:
-      "https://raw.githubusercontent.com/mui/base-ui/master/docs/reference/generated",
+    rawBase: "https://raw.githubusercontent.com/mui/base-ui/master",
     referencePath: "docs/reference/generated",
+    examplesPath: "docs/src/app/(public)/(content)/react/components",
     token: process.env.GITHUB_TOKEN,
   },
 
