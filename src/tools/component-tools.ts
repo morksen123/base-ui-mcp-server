@@ -1,9 +1,6 @@
-import { BaseUIComponent } from "@/schema";
+import { BaseUIComponent, PaginatedSearchResults } from "@/schema";
 import { fetchComponent, fetchAllComponents } from "@/fetchers/github-fetcher";
-import {
-  searchWithPagination,
-  PaginatedSearchResults,
-} from "@/utils/search-utils";
+import { searchWithPagination } from "@/utils/search-utils";
 
 async function getAllComponents(): Promise<Map<string, BaseUIComponent>> {
   return fetchAllComponents();
@@ -18,7 +15,7 @@ export async function searchComponentsWithPagination(
     includeProps?: boolean;
     includeDataAttributes?: boolean;
   }
-): Promise<PaginatedSearchResults> {
+) {
   const components = await getAllComponents();
 
   return searchWithPagination(components, query, {

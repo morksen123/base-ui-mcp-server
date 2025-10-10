@@ -37,11 +37,11 @@ export function getConfig(): Config {
   return cachedConfig;
 }
 
-export function resetConfig(): void {
+export function resetConfig() {
   cachedConfig = null;
 }
 
-export function updateConfig(partial: Partial<Config>): Config {
+export function updateConfig(partial: Partial<Config>) {
   const current = getConfig();
   const updated = {
     ...current,

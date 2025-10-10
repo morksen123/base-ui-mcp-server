@@ -96,6 +96,50 @@ export const SetupChecklistSchema = z.object({
 
 export type SetupChecklist = z.infer<typeof SetupChecklistSchema>;
 
+export const SearchResultSchema = z.object({
+  component: BaseUIComponentSchema,
+  score: z.number().min(0).max(1),
+});
+
+export const PaginatedSearchResultsSchema = z.object({
+  items: z.array(BaseUIComponentSchema),
+  pagination: z.object({
+    total: z.number().int().min(0),
+    offset: z.number().int().min(0),
+    limit: z.number().int().positive(),
+    hasMore: z.boolean(),
+  }),
+});
+
+export type SearchResult = z.infer<typeof SearchResultSchema>;
+export type PaginatedSearchResults = z.infer<
+  typeof PaginatedSearchResultsSchema
+>;
+
+export const ComponentExampleSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  code: z.string(),
+  cssCode: z.string().optional(),
+  language: z.enum(["tsx", "jsx"]),
+  variant: z.enum(["css-modules", "tailwind"]),
+});
+
+export const ComponentExamplesSchema = z.object({
+  componentName: z.string(),
+  demos: z.array(ComponentExampleSchema),
+  anatomy: z.string(),
+  inlineExamples: z.array(
+    z.object({
+      title: z.string(),
+      code: z.string(),
+    })
+  ),
+});
+
+export type ComponentExample = z.infer<typeof ComponentExampleSchema>;
+export type ComponentExamples = z.infer<typeof ComponentExamplesSchema>;
+
 export const GetSetupChecklistSchema = z.object({});
 
 export type SearchComponentsParams = z.infer<typeof SearchComponentsSchema>;

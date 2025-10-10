@@ -1,20 +1,9 @@
-import { BaseUIComponent } from "@/schema";
+import {
+  BaseUIComponent,
+  SearchResult,
+  PaginatedSearchResults,
+} from "@/schema";
 import fuzzysort from "fuzzysort";
-
-export interface SearchResult {
-  component: BaseUIComponent;
-  score: number;
-}
-
-export interface PaginatedSearchResults {
-  items: BaseUIComponent[];
-  pagination: {
-    total: number;
-    offset: number;
-    limit: number;
-    hasMore: boolean;
-  };
-}
 
 function normalizeScore(fuzzysortScore: number): number {
   return Math.max(0, Math.min(1, fuzzysortScore));
@@ -30,7 +19,7 @@ export function searchWithScoring(
     includeProps?: boolean;
     includeDataAttributes?: boolean;
   } = {}
-): SearchResult[] {
+) {
   const {
     limit = 10,
     offset = 0,
@@ -84,7 +73,7 @@ export function searchWithPagination(
     includeProps?: boolean;
     includeDataAttributes?: boolean;
   } = {}
-): PaginatedSearchResults {
+) {
   const {
     limit = 10,
     offset = 0,

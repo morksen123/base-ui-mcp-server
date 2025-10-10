@@ -13,7 +13,7 @@ import { getConfig } from "@/config";
 // Cache stores promises to prevent duplicate concurrent requests for the same resource
 const resourceCache = new Map<string, Promise<any>>();
 
-export function clearResourceCache(): void {
+export function clearResourceCache() {
   resourceCache.clear();
   console.error("Resource cache cleared");
 }

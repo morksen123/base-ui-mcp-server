@@ -1,24 +1,6 @@
 import { getConfig } from "@/config";
 import { fetchJson, fetchText, getGitHubHeaders } from "@/utils/fetch-json";
-
-export interface ComponentExample {
-  name: string;
-  description: string;
-  code: string;
-  cssCode?: string;
-  language: "tsx" | "jsx";
-  variant: "css-modules" | "tailwind";
-}
-
-export interface ComponentExamples {
-  componentName: string;
-  demos: ComponentExample[];
-  anatomy: string;
-  inlineExamples: Array<{
-    title: string;
-    code: string;
-  }>;
-}
+import { ComponentExample, ComponentExamples } from "@/schema";
 
 async function fetchDemosList(componentName: string): Promise<string[]> {
   const config = getConfig();
