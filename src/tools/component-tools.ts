@@ -1,4 +1,4 @@
-import { BaseUIComponent } from "@/types";
+import { BaseUIComponent } from "@/schema";
 import { fetchComponent, fetchAllComponents } from "@/fetchers/github-fetcher";
 import {
   searchWithPagination,

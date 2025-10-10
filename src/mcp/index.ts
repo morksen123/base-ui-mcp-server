@@ -11,7 +11,7 @@ import {
   SearchComponentsSchema,
   GetComponentExamplesSchema,
   GetSetupChecklistSchema,
-} from "@/types";
+} from "@/schema";
 import {
   handleSearchComponents,
   handleGetComponentExamples,

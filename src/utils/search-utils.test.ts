@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { searchWithScoring, searchWithPagination } from "@/utils/search-utils";
-import { BaseUIComponent } from "@/types";
+import { BaseUIComponent } from "@/schema";
 
 // Mock component data for testing
 const createMockComponent = (

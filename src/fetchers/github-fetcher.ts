@@ -1,4 +1,4 @@
-import { BaseUIComponent, BaseUIComponentSchema } from "@/types";
+import { BaseUIComponent, BaseUIComponentSchema } from "@/schema";
 import {
   FetchError,
   ValidationError,

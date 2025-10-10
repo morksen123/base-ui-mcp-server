@@ -76,6 +76,26 @@ export const GetComponentExamplesSchema = z.object({
     .describe("Styling variant to filter examples (css-modules or tailwind)"),
 });
 
+export const SetupChecklistSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      description: z.string(),
+      required: z.boolean(),
+      checkCommand: z.string().optional(),
+    })
+  ),
+  troubleshooting: z.array(
+    z.object({
+      issue: z.string(),
+      solution: z.string(),
+    })
+  ),
+});
+
+export type SetupChecklist = z.infer<typeof SetupChecklistSchema>;
+
 export const GetSetupChecklistSchema = z.object({});
 
 export type SearchComponentsParams = z.infer<typeof SearchComponentsSchema>;

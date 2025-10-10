@@ -1,18 +1,4 @@
-export interface SetupChecklist {
-  items: Array<{
-    id: string;
-    title: string;
-    description: string;
-    required: boolean;
-    checkCommand?: string;
-  }>;
-  troubleshooting: Array<{
-    issue: string;
-    solution: string;
-  }>;
-}
-
-export async function getSetupChecklist(): Promise<SetupChecklist> {
+export async function getSetupChecklist() {
   return {
     items: [
       {

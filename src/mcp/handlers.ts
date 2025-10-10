@@ -2,7 +2,7 @@ import {
   SearchComponentsSchema,
   GetComponentExamplesSchema,
   GetSetupChecklistSchema,
-} from "@/types";
+} from "@/schema";
 import { searchComponentsWithPagination } from "@/tools/component-tools";
 import { getExamples } from "@/tools/examples-tools";
 import { getSetupChecklist } from "@/tools/installation-tools";

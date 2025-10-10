@@ -1,7 +1,6 @@
 import dedent from "dedent";
-import type { BaseUIComponent } from "@/types";
+import type { BaseUIComponent, SetupChecklist } from "@/schema";
 import type { PaginatedSearchResults } from "@/utils/search-utils";
-import type { SetupChecklist } from "@/tools/installation-tools";
 
 export function formatSearchResults(
   results: PaginatedSearchResults,
