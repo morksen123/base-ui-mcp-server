@@ -76,20 +76,10 @@ export const GetComponentExamplesSchema = z.object({
     .describe("Styling variant to filter examples (css-modules or tailwind)"),
 });
 
-export const GetInstallationGuideSchema = z.object({
-  componentNames: z
-    .array(z.string())
-    .min(1, "At least one component name is required")
-    .describe("Array of component names to get installation guide for"),
-});
-
 export const GetSetupChecklistSchema = z.object({});
 
 export type SearchComponentsParams = z.infer<typeof SearchComponentsSchema>;
 export type GetComponentExamplesParams = z.infer<
   typeof GetComponentExamplesSchema
->;
-export type GetInstallationGuideParams = z.infer<
-  typeof GetInstallationGuideSchema
 >;
 export type GetSetupChecklistParams = z.infer<typeof GetSetupChecklistSchema>;

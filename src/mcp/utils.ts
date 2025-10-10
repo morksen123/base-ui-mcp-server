@@ -1,10 +1,7 @@
 import dedent from "dedent";
 import type { BaseUIComponent } from "@/types";
 import type { PaginatedSearchResults } from "@/utils/search-utils";
-import type {
-  InstallationGuide,
-  SetupChecklist,
-} from "@/tools/installation-tools";
+import type { SetupChecklist } from "@/tools/installation-tools";
 
 export function formatSearchResults(
   results: PaginatedSearchResults,
@@ -140,54 +137,6 @@ export function formatComponentExamples(examples: {
   }
 
   return response;
-}
-
-export function formatInstallationGuide(guide: InstallationGuide): string {
-  return dedent`
-    # Installation Guide
-
-    ## Install ${guide.packageName}
-
-    **npm:**
-    \`\`\`bash
-    ${guide.installCommand.npm}
-    \`\`\`
-
-    **yarn:**
-    \`\`\`bash
-    ${guide.installCommand.yarn}
-    \`\`\`
-
-    **pnpm:**
-    \`\`\`bash
-    ${guide.installCommand.pnpm}
-    \`\`\`
-
-    ## Peer Dependencies
-
-    - React: ${guide.peerDependencies.react}
-    - React DOM: ${guide.peerDependencies.reactDom}
-
-    ## Import
-
-    ${guide.imports.join("\n")}
-
-    ## Basic Usage
-
-    \`\`\`jsx
-    ${guide.basicUsage}
-    \`\`\`
-
-    ${
-      guide.relatedComponents && guide.relatedComponents.length > 0
-        ? `## Related Components\n\n${guide.relatedComponents.join(", ")}`
-        : ""
-    }
-
-    ## Styling
-
-    ${guide.cssSetup}
-  `;
 }
 
 export function formatSetupChecklist(checklist: SetupChecklist): string {

@@ -1,19 +1,14 @@
 import {
   SearchComponentsSchema,
   GetComponentExamplesSchema,
-  GetInstallationGuideSchema,
   GetSetupChecklistSchema,
 } from "@/types";
 import { searchComponentsWithPagination } from "@/tools/component-tools";
 import { getExamples } from "@/tools/examples-tools";
-import {
-  getInstallationGuide,
-  getSetupChecklist,
-} from "@/tools/installation-tools";
+import { getSetupChecklist } from "@/tools/installation-tools";
 import {
   formatSearchResults,
   formatComponentExamples,
-  formatInstallationGuide,
   formatSetupChecklist,
   formatNoResultsFound,
   formatNoExamplesFound,
@@ -75,21 +70,6 @@ export async function handleGetComponentExamples(args: unknown) {
       {
         type: "text" as const,
         text: formatComponentExamples(examples),
-      },
-    ],
-  };
-}
-
-export async function handleGetInstallationGuide(args: unknown) {
-  const parsedArgs = GetInstallationGuideSchema.parse(args);
-
-  const guide = await getInstallationGuide(parsedArgs.componentNames);
-
-  return {
-    content: [
-      {
-        type: "text" as const,
-        text: formatInstallationGuide(guide),
       },
     ],
   };
