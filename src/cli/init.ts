@@ -24,7 +24,7 @@ const CLIENTS = [
     name: "vscode",
     label: "VS Code",
     configPath: ".vscode/mcp.json",
-    configKey: "servers", // VS Code uses "servers" not "mcpServers"
+    configKey: "servers",
     configDir: ".vscode",
   },
   {

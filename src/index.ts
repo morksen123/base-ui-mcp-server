@@ -6,13 +6,11 @@ import { initMCP } from "@/cli/init";
 async function main() {
   const args = process.argv.slice(2);
 
-  // Handle CLI commands
   if (args.length > 0) {
     const [command, ...params] = args;
 
     switch (command) {
       case "init":
-        // Handle "init" command directly
         await initMCP(params);
         return;
       case "mcp":
@@ -25,7 +23,6 @@ async function main() {
     }
   }
 
-  // Default: start MCP server
   await startServer();
 }
 

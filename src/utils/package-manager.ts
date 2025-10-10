@@ -5,7 +5,6 @@ export type PackageManager = "npm" | "pnpm" | "yarn" | "bun";
 export async function detectPackageManager(
   cwd: string = process.cwd()
 ): Promise<PackageManager> {
-  // Check for lock files in order of preference
   const lockFiles = [
     { file: "bun.lockb", manager: "bun" as PackageManager },
     { file: "pnpm-lock.yaml", manager: "pnpm" as PackageManager },
@@ -37,7 +36,6 @@ export async function detectPackageManager(
     // package.json doesn't exist or doesn't have packageManager field
   }
 
-  // Default to npm
   return "npm";
 }
 
