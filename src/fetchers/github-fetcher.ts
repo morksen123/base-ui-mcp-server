@@ -1,4 +1,4 @@
-import { BaseUIComponent, BaseUIComponentSchema } from "@/types";
+import { BaseUIComponent, BaseUIComponentSchema } from "@/schema";
 import {
   FetchError,
   ValidationError,
@@ -6,14 +6,14 @@ import {
   UnauthorizedError,
   ForbiddenError,
 } from "@/errors/registry-error";
-import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
+import { FALLBACK_COMPONENT_NAMES } from "@/constants";
 import { fetchJson, getGitHubHeaders } from "@/utils/fetch-json";
 import { getConfig } from "@/config";
 
 // Cache stores promises to prevent duplicate concurrent requests for the same resource
 const resourceCache = new Map<string, Promise<any>>();
 
-export function clearResourceCache(): void {
+export function clearResourceCache() {
   resourceCache.clear();
   console.error("Resource cache cleared");
 }

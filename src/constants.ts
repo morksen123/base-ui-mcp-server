@@ -1,3 +1,26 @@
+export const GITHUB_CONFIG = {
+  apiBase: "https://api.github.com/repos/mui/base-ui",
+  rawBase: "https://raw.githubusercontent.com/mui/base-ui/master",
+  referencePath: "docs/reference/generated",
+  examplesPath: "docs/src/app/(public)/(content)/react/components",
+} as const;
+
+export const SERVER_CONFIG = {
+  name: "base-ui",
+  version: "1.0.0-beta.2",
+} as const;
+
+export const FETCHER_CONFIG = {
+  timeout: 30000,
+  retries: 0,
+} as const;
+
+export const CACHE_CONFIG = {
+  enabled: true,
+  ttl: undefined,
+} as const;
+
+// Fallback component names for when GitHub API is unavailable
 export const FALLBACK_COMPONENT_NAMES: readonly string[] = [
   "accordion-header",
   "accordion-item",

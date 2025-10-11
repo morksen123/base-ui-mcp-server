@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   handleSearchComponents,
   handleGetComponentExamples,
-  handleGetInstallationGuide,
   handleGetSetupChecklist,
 } from "./handlers";
 import * as componentTools from "@/tools/component-tools";
@@ -318,93 +317,6 @@ describe("MCP Handlers", () => {
     });
   });
 
-  describe("handleGetInstallationGuide", () => {
-    it("should generate installation guide for single component", async () => {
-      const mockGuide = {
-        packageName: "@base-ui-components/react",
-        installCommand: {
-          npm: "npm install @base-ui-components/react",
-          yarn: "yarn add @base-ui-components/react",
-          pnpm: "pnpm add @base-ui-components/react",
-        },
-        peerDependencies: {
-          react: "^18.0.0",
-          reactDom: "^18.0.0",
-        },
-        imports: ['import { Dialog } from "@base-ui-components/react/Dialog";'],
-        basicUsage: "See component documentation for usage examples.",
-        relatedComponents: ["DialogPopup", "DialogTrigger"],
-        cssSetup: "Import styles.css",
-      };
-
-      vi.spyOn(installationTools, "getInstallationGuide").mockResolvedValueOnce(
-        mockGuide
-      );
-
-      const result = await handleGetInstallationGuide({
-        componentNames: ["DialogRoot"],
-      });
-
-      expect(installationTools.getInstallationGuide).toHaveBeenCalledWith([
-        "DialogRoot",
-      ]);
-
-      expect(result.content).toHaveLength(1);
-      expect(result.content[0].type).toBe("text");
-      expect(result.content[0].text).toContain("Installation Guide");
-      expect(result.content[0].text).toContain("npm install");
-      expect(result.content[0].text).toContain("@base-ui-components/react");
-    });
-
-    it("should generate installation guide for multiple components", async () => {
-      const mockGuide = {
-        packageName: "@base-ui-components/react",
-        installCommand: {
-          npm: "npm install @base-ui-components/react",
-          yarn: "yarn add @base-ui-components/react",
-          pnpm: "pnpm add @base-ui-components/react",
-        },
-        peerDependencies: {
-          react: "^18.0.0",
-          reactDom: "^18.0.0",
-        },
-        imports: ['import { Dialog } from "@base-ui-components/react/Dialog";'],
-        basicUsage: "See component documentation for usage examples.",
-        relatedComponents: ["DialogRoot", "DialogPopup", "DialogTrigger"],
-      };
-
-      vi.spyOn(installationTools, "getInstallationGuide").mockResolvedValueOnce(
-        mockGuide
-      );
-
-      const result = await handleGetInstallationGuide({
-        componentNames: ["DialogRoot", "DialogPopup", "DialogTrigger"],
-      });
-
-      expect(installationTools.getInstallationGuide).toHaveBeenCalledWith([
-        "DialogRoot",
-        "DialogPopup",
-        "DialogTrigger",
-      ]);
-
-      expect(result.content).toHaveLength(1);
-      expect(result.content[0].text).toContain("@base-ui-components/react");
-      expect(result.content[0].text).toContain("npm install");
-    });
-
-    it("should throw validation error for empty array", async () => {
-      await expect(
-        handleGetInstallationGuide({ componentNames: [] })
-      ).rejects.toThrow(/At least one component name is required/);
-    });
-
-    it("should throw validation error for non-array input", async () => {
-      await expect(
-        handleGetInstallationGuide({ componentNames: "DialogRoot" })
-      ).rejects.toThrow();
-    });
-  });
-
   describe("handleGetSetupChecklist", () => {
     it("should return setup checklist", async () => {
       const mockChecklist = {
@@ -489,17 +401,6 @@ describe("MCP Handlers", () => {
       await expect(
         handleGetComponentExamples({ name: "Dialog" })
       ).rejects.toThrow("Examples fetch failed");
-    });
-
-    it("should propagate errors from getInstallationGuide", async () => {
-      const error = new Error("Installation guide failed");
-      vi.spyOn(installationTools, "getInstallationGuide").mockRejectedValueOnce(
-        error
-      );
-
-      await expect(
-        handleGetInstallationGuide({ componentNames: ["Dialog"] })
-      ).rejects.toThrow("Installation guide failed");
     });
 
     it("should propagate errors from getSetupChecklist", async () => {

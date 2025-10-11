@@ -1,10 +1,10 @@
 import dedent from "dedent";
-import type { BaseUIComponent } from "@/types";
-import type { PaginatedSearchResults } from "@/utils/search-utils";
 import type {
-  InstallationGuide,
+  BaseUIComponent,
+  ComponentExamples,
   SetupChecklist,
-} from "@/tools/installation-tools";
+} from "@/schema";
+import type { PaginatedSearchResults } from "@/schema";
 
 export function formatSearchResults(
   results: PaginatedSearchResults,
@@ -42,22 +42,11 @@ export function formatSearchResults(
   return response;
 }
 
-export function formatComponentExamples(examples: {
-  componentName: string;
-  anatomy?: string;
-  demos: Array<{
-    description: string;
-    variant: string;
-    code: string;
-    cssCode?: string;
-    language: string;
-  }>;
-  inlineExamples: Array<{
-    title: string;
-    code: string;
-  }>;
-  component?: BaseUIComponent;
-}): string {
+export function formatComponentExamples(
+  examples: ComponentExamples & {
+    component?: BaseUIComponent;
+  }
+): string {
   let response = `# ${examples.componentName}\n\n`;
 
   if (examples.component) {
@@ -142,55 +131,7 @@ export function formatComponentExamples(examples: {
   return response;
 }
 
-export function formatInstallationGuide(guide: InstallationGuide): string {
-  return dedent`
-    # Installation Guide
-
-    ## Install ${guide.packageName}
-
-    **npm:**
-    \`\`\`bash
-    ${guide.installCommand.npm}
-    \`\`\`
-
-    **yarn:**
-    \`\`\`bash
-    ${guide.installCommand.yarn}
-    \`\`\`
-
-    **pnpm:**
-    \`\`\`bash
-    ${guide.installCommand.pnpm}
-    \`\`\`
-
-    ## Peer Dependencies
-
-    - React: ${guide.peerDependencies.react}
-    - React DOM: ${guide.peerDependencies.reactDom}
-
-    ## Import
-
-    ${guide.imports.join("\n")}
-
-    ## Basic Usage
-
-    \`\`\`jsx
-    ${guide.basicUsage}
-    \`\`\`
-
-    ${
-      guide.relatedComponents && guide.relatedComponents.length > 0
-        ? `## Related Components\n\n${guide.relatedComponents.join(", ")}`
-        : ""
-    }
-
-    ## Styling
-
-    ${guide.cssSetup}
-  `;
-}
-
-export function formatSetupChecklist(checklist: SetupChecklist): string {
+export function formatSetupChecklist(checklist: SetupChecklist) {
   let response = "# Base UI Setup Checklist\n\n";
 
   checklist.items.forEach((item, index) => {
@@ -212,7 +153,7 @@ export function formatSetupChecklist(checklist: SetupChecklist): string {
   return response;
 }
 
-export function formatNoResultsFound(query: string): string {
+export function formatNoResultsFound(query: string) {
   return dedent`
     No components found matching "${query}".
 
@@ -223,7 +164,7 @@ export function formatNoResultsFound(query: string): string {
   `;
 }
 
-export function formatNoExamplesFound(componentName: string): string {
+export function formatNoExamplesFound(componentName: string) {
   return dedent`
     No examples found for component "${componentName}".
 

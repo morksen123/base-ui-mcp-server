@@ -10,13 +10,11 @@ import dedent from "dedent";
 import {
   SearchComponentsSchema,
   GetComponentExamplesSchema,
-  GetInstallationGuideSchema,
   GetSetupChecklistSchema,
-} from "@/types";
+} from "@/schema";
 import {
   handleSearchComponents,
   handleGetComponentExamples,
-  handleGetInstallationGuide,
   handleGetSetupChecklist,
 } from "./handlers";
 import { handleError } from "@/utils/handle-error";
@@ -68,19 +66,6 @@ export function createServer() {
           inputSchema: zodToJsonSchema(GetComponentExamplesSchema),
         },
         {
-          name: "get_installation_guide",
-          description: dedent`
-            Get install commands, imports, and setup instructions.
-
-            Example: { "componentNames": ["DialogRoot"] }
-            Multiple: { "componentNames": ["DialogRoot", "DialogTrigger", "DialogPopup"] }
-
-            Returns: npm/yarn/pnpm commands, imports, React requirements, basic usage.
-            Tip: Use exact names. For compound components, list all parts you need.
-          `,
-          inputSchema: zodToJsonSchema(GetInstallationGuideSchema),
-        },
-        {
           name: "get_setup_checklist",
           description: dedent`
             Verify your Base UI setup and troubleshoot issues.
@@ -112,9 +97,6 @@ export function createServer() {
 
         case "get_component_examples":
           return await handleGetComponentExamples(args);
-
-        case "get_installation_guide":
-          return await handleGetInstallationGuide(args);
 
         case "get_setup_checklist":
           return await handleGetSetupChecklist(args);

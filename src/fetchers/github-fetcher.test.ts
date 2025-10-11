@@ -5,7 +5,7 @@ import {
   fetchAllComponents,
   clearResourceCache,
 } from "@/fetchers/github-fetcher";
-import { FALLBACK_COMPONENT_NAMES } from "@/constants/fallback-components";
+import { FALLBACK_COMPONENT_NAMES } from "@/constants";
 import {
   NotFoundError,
   FetchError,

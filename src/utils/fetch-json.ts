@@ -133,7 +133,7 @@ export async function fetchText(
   }
 }
 
-export function getGitHubHeaders(): Record<string, string> {
+export function getGitHubHeaders() {
   const config = getConfig();
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
