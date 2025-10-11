@@ -46,6 +46,9 @@ export async function installPackage(
 ): Promise<void> {
   const packageManager = await detectPackageManager(cwd);
 
+  // Check if we're in a workspace (pnpm workspace file exists)
+  const isWorkspace = await checkIfWorkspace(cwd);
+
   // For local development, don't try to install the package if it's the current package
   const packageJsonPath = `${cwd}/package.json`;
   try {
@@ -62,6 +65,12 @@ export async function installPackage(
     // package.json doesn't exist, continue with installation
   }
 
+  // In pnpm workspaces, don't try to install as dev dependency to workspace root
+  if (isWorkspace && packageManager === "pnpm") {
+    console.log(`📦 Skipping package installation (pnpm workspace detected)`);
+    return;
+  }
+
   const installArgs = getInstallArgs(packageManager, dev);
   installArgs.push(packageName);
 
@@ -69,6 +78,17 @@ export async function installPackage(
     cwd,
     stdio: "inherit",
   });
+}
+
+async function checkIfWorkspace(cwd: string): Promise<boolean> {
+  try {
+    await import("fs/promises").then((fs) =>
+      fs.access(`${cwd}/pnpm-workspace.yaml`)
+    );
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function getInstallArgs(

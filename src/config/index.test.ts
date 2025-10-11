@@ -169,7 +169,7 @@ describe("Config System", () => {
 
       // Server version should be preserved
       expect(updated.server.name).toBe("custom-name");
-      expect(updated.server.version).toBe("1.0.0-beta.2");
+      expect(updated.server.version).toBe("1.0.0-beta.3");
 
       // Other sections should be unchanged
       expect(updated.github.apiBase).toBe(

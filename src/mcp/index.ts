@@ -72,7 +72,7 @@ export function createServer() {
 
             Example: {}
 
-            Returns: Installation verification, React version check, TypeScript config, CSS setup, troubleshooting.
+            Returns: Installation verification, React version check, troubleshooting.
             Use after adding components to verify everything works.
           `,
           inputSchema: zodToJsonSchema(GetSetupChecklistSchema),
