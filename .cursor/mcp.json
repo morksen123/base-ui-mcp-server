@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "base-ui": {
-      "command": "npx",
+      "command": "npx", // change to node for local development
       "args": [
-        "base-ui-mcp-server",
+        "base-ui-mcp-server", // change to /dist/index.js path for local development
         "mcp"
       ]
     }
