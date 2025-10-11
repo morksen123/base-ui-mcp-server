@@ -7,7 +7,7 @@ export const GITHUB_CONFIG = {
 
 export const SERVER_CONFIG = {
   name: "base-ui",
-  version: "1.0.0-beta.2",
+  version: "1.0.0-beta.3",
 } as const;
 
 export const FETCHER_CONFIG = {
