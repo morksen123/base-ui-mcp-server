@@ -331,7 +331,7 @@ describe("MCP Handlers", () => {
           {
             id: "react-version",
             title: "Verify React Version",
-            description: "Ensure React 18+ is installed",
+            description: "Ensure React 17+ is installed",
             required: true,
             checkCommand: "npm list react",
           },
